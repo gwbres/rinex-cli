@@ -1,0 +1,15 @@
+[package]
+name = "rinex-cli"
+version = "0.0.1"
+license = "MIT OR Apache-2.0"
+authors = ["Guillaume W. Bres <guillaume.bressaix@gmail.com>"]
+description = "Command line tool parse and analyze RINEX data"
+homepage = "https://github.com/gwbres/rinex-cli"
+keywords = ["rinex", "gps", "glonass", "galileo", "timing"]
+categories = ["science"]
+edition = "2018"
+readme = "README.md"
+
+[dependencies]
+rinex = "0.2.0"
+clap = { version = "~2.27.0", features = ["yaml"] }

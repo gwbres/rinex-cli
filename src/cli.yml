@@ -5,5 +5,20 @@ args:
     - filepath:
         short: fp
         long: filepath
+        required: true
         takes_value: true
         help: Local RINEX file path
+    - epoch:
+        short: e 
+        long: epoch 
+        takes_value: false 
+        help: Sort & display identified epochs
+    - epoch-ok:
+        long: epoch-ok 
+        takes_value: false 
+        help: Retain epoch that have an EpochFlag::ok value only 
+    - observation:
+        short: o 
+        long: obs 
+        takes_value: true
+        help: Retain epoch that have an EpochFlag::ok value only 

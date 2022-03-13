@@ -1,0 +1,9 @@
+name: rinex-cli
+version: "0.0.1"
+author: Guillaume W. Bres <guillaume.bressaix@gmail.com>
+args:
+    - filepath:
+        short: fp
+        long: filepath
+        takes_value: true
+        help: Local RINEX file path

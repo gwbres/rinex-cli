@@ -6,7 +6,7 @@ authors = ["Guillaume W. Bres <guillaume.bressaix@gmail.com>"]
 description = "Command line tool parse and analyze RINEX data"
 homepage = "https://github.com/gwbres/rinex-cli"
 keywords = ["rinex", "gps", "glonass", "galileo", "timing"]
-categories = ["science"]
+categories = ["science", "command-line-interface", "command-line-utilities"]
 edition = "2018"
 readme = "README.md"
 

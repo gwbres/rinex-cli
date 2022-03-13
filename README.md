@@ -7,3 +7,7 @@ Command line tool to handle, manage and analyze RINEX files
 [![crates.io](https://img.shields.io/crates/d/rinex-cli.svg)](https://crates.io/crates/rinex-cli)    
 [![Rust](https://github.com/gwbres/rinex-cli/actions/workflows/rust.yml/badge.svg)](https://github.com/gwbres/rinex-cli/actions/workflows/rust.yml)
 [![crates.io](https://docs.rs/rinex-cli/badge.svg)](https://docs.rs/rinex-cli/badge.svg)
+
+This command line interface implements the latest 
+[Rinex crate](https://crates.io/crates/rinex)
+and allows easy RINEX files manipulation.

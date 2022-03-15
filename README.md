@@ -16,14 +16,14 @@ and allows easy RINEX files manipulation.
 
 Run with `cargo`
 
-```rust
+```bash
 cargo run
 ```
 
 Filepath : -fp or --filepath   
 Lets you select local RINEX files:
 
-```rust
+```bash
 cargo run --filepath /tmp/amel010.21g
 cargo run --filepath /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 ```
@@ -48,13 +48,13 @@ lets you filter and retain satelllite vehicules that
 have are associated to these constellations.
 
 For example:
-```rust
+```bash
 cargo run --filepath amel010.21g -c GLO
 ```
 
 will retain only Glonass vehicules
 
-```rust
+```bash
 cargo run -fp amel010.21g -c GLO,E
 ```
 
@@ -71,13 +71,13 @@ Constellation identification supports:
 Sv: -v or --vehicule  
 lets you select matching satellite vehicules
 
-```rust
+```bash
 cargo run -fp amel010.21g -v R04
 ```
 
 Only R04 to be retained
 
-```rust
+```bash
 cargo run -fp amel010.21g --vehicule R04,E10
 ```
 
@@ -88,7 +88,7 @@ will study R04 and E10
 Nav : -n or --navigation   
 Lets you select NAV file data fields
 
-```rust
+```bash
 cargo run -fp amel010.21g --nav iode,health
 ```
 
@@ -100,7 +100,7 @@ Obs : -o or --observation
 Lets you select OBS code of interests.   
 These work for both METEO and OBS data
 
-```rust
+```bash
 cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx -o L1C,S1P 
 ```
 
@@ -111,7 +111,10 @@ Codes must be valid and encountered OBS codes.
 Default format is purely stdout.   
 
 --csv lets you output all the data into csv format   
---plot will plot using ...
+Will create 1 csv file per RINEX file, same name, created locally.   
+--prefix moves the output file location   
+--plot will not print but plot all data using this lib ...   
+Will create 1 plot per file
 
 ## TODO
 

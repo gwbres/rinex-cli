@@ -116,9 +116,8 @@ and only retain data of interest.
 
 * Observation / meteo data: we use the OBS code directly
 * Navigation data: we use the official identification keyword,
-refero to the known
-Refer to the known
-[NAV fields database](https://github.com/gwbres/rinex/blob/main/navigation.json)
+refer to the known
+[NAV database](https://github.com/gwbres/rinex/blob/main/navigation.json)
 
 
 Example:

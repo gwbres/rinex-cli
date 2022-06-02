@@ -17,7 +17,7 @@ Why this tool ?
 
 RINEX are very common worldwide, they are used in 
 GNSS :artificial_satellite:, 
-timing :clock: :satellite: 
+timing :clock1: :satellite: 
 and navigation :rocket: :earth_americas: 
 applications.
 

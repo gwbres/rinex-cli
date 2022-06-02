@@ -74,3 +74,6 @@ args:
         long: write
         takes_value: true
         help: Write result into given destination
+    - record:
+        long: record
+        help: Display (print) entire record content, after filtering operations

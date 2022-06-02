@@ -28,11 +28,10 @@ cargo run --filepath /tmp/amel010.21g
 cargo run --filepath /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 ```
 
-&#9888; Compressed OBS RINEX must be manually decompressed
-first.
+Compressed OBS are natively supported.
 
 &#9888; for V > 2 RINEX OBS, this parser expects
-single line epochs. 
+single line epochs (resulting from RNX2CRX compression). 
 
 Epoch flag : -e    
 Using this flag will print all encountered epochs.

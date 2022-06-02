@@ -296,13 +296,15 @@ for fp in &filepaths {
     }
 
     if merge {
-        println!("MERGE OPT is WIP");
+        println!("MERGE() is WIP");
     }
 
-    match rinex.header.rinex_type {
-        Type::ObservationData => println!("OBS RECORD \n{:#?}", rinex.record.as_obs().unwrap()),
-        Type::NavigationData => println!("NAV RECORD \n{:#?}", rinex.record.as_nav().unwrap()),
-        Type::MeteoData => println!("METEO RECORD \n{:#?}", rinex.record.as_meteo().unwrap()),
+    if !epoch_display && !obscode_display {
+        match rinex.header.rinex_type {
+            Type::ObservationData => println!("OBS RECORD \n{:#?}", rinex.record.as_obs().unwrap()),
+            Type::NavigationData => println!("NAV RECORD \n{:#?}", rinex.record.as_nav().unwrap()),
+            Type::MeteoData => println!("METEO RECORD \n{:#?}", rinex.record.as_meteo().unwrap()),
+        }
     }
 
 }// for all files

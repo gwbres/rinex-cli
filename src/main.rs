@@ -9,7 +9,6 @@ use std::collections::HashMap;
 
 use rinex::Rinex;
 use rinex::sv::Sv;
-use rinex::epoch;
 use rinex::meteo;
 use rinex::types::Type;
 use rinex::observation;
@@ -31,7 +30,6 @@ pub fn main () {
     let merge = matches.is_present("merge");
     let split = matches.is_present("split");
     let splice = matches.is_present("splice");
-    let print_record = matches.is_present("record");
     
     // `Epoch`
     let epoch_display = matches.is_present("epoch");
@@ -56,17 +54,11 @@ pub fn main () {
     };
 
     // OBS | METEO
+    let obscode_display = matches.is_present("obscodes");
     let obscode_filter : Option<Vec<&str>> = match matches.value_of("codes") {
         Some(s) => Some(s.split(",").collect()),
         _ => None,
     };
-
-    let obscode_display = matches.is_present("obscodes");
-    // raw OBS
-    let pseudorange = matches.is_present("pseudorange");
-    let raw_phase = matches.is_present("phase");
-    let doppler = matches.is_present("doppler");
-    let sigstrength = matches.is_present("sigstrength");
 
     // file paths 
     let filepaths : Vec<&str> = matches.value_of("filepath")
@@ -303,46 +295,14 @@ for fp in &filepaths {
         println!("*******************************");
     }
 
-    if print_record {
-        match rinex.header.rinex_type {
-            Type::ObservationData => println!("OBS RECORD \n{:#?}", rinex.record.as_obs().unwrap()),
-            Type::NavigationData => println!("NAV RECORD \n{:#?}", rinex.record.as_nav().unwrap()),
-            Type::MeteoData => println!("METEO RECORD \n{:#?}", rinex.record.as_meteo().unwrap()),
-        }
+    if merge {
+        println!("MERGE OPT is WIP");
     }
 
-    if pseudorange || sigstrength || doppler || raw_phase {
-        let data : Vec<_> = rinex.record
-            .as_obs()
-            .unwrap()
-            .iter()
-            .map(|(epoch, (_, data))| {
-                data.iter()
-                    .map(|(sv, obs)| {
-                        obs.iter()
-                            .find(|(code, data)| {
-                                let mut ok = false;
-                                if pseudorange {
-                                    ok |= rinex::is_pseudo_range_obs_code!(code) 
-                                }
-                                if sigstrength {
-                                    ok |= rinex::is_sig_strength_obs_code!(code) 
-                                }
-                                if doppler {
-                                    ok |= rinex::is_doppler_obs_code!(code) 
-                                }
-                                if raw_phase {
-                                    ok |= rinex::is_phase_carrier_obs_code!(code) 
-                                }
-                                ok
-                            })
-                            .map(|(code,data)| (sv, code, data))
-                    })
-                    .flatten()
-            })
-            .flatten()
-            .collect();
-        println!("DATA: {:#?}", data); 
+    match rinex.header.rinex_type {
+        Type::ObservationData => println!("OBS RECORD \n{:#?}", rinex.record.as_obs().unwrap()),
+        Type::NavigationData => println!("NAV RECORD \n{:#?}", rinex.record.as_nav().unwrap()),
+        Type::MeteoData => println!("METEO RECORD \n{:#?}", rinex.record.as_meteo().unwrap()),
     }
 
 }// for all files

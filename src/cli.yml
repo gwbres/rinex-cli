@@ -78,7 +78,7 @@ args:
         short: s
         long: split
         takes_value: true
-        help: Split given file(s) into two at specified epoch
+        help: Split given file(s) into two at given epoch. Epoch must have YYYY-mm-dd:HH:MM:SS format.
     - splice:
         long: splice
         takes_value: true

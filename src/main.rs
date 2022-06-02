@@ -10,9 +10,10 @@ use std::collections::HashMap;
 use rinex::Rinex;
 use rinex::sv::Sv;
 use rinex::meteo;
-use rinex::types::Type;
-use rinex::observation;
 use rinex::navigation;
+use rinex::observation;
+use rinex::types::Type;
+use rinex::epoch;
 use rinex::record::Record;
 use rinex::constellation::Constellation;
 
@@ -26,7 +27,29 @@ pub fn main () {
     let resampling = matches.is_present("resampling");
     let decimate = matches.is_present("decimate");
     let merge = matches.is_present("merge");
+
     let split = matches.is_present("split");
+    let split_epoch : Option<epoch::Epoch> = match matches.value_of("split") {
+        Some(date) => {
+            let offset = 4 +2+1 +2+1 +2+1 +2+1 +2+1; // YYYY-mm-dd-HH:MM:SS 
+            let datetime = date[0..offset];
+            let flag : Option<epoch::EpochFlag> = match date.len() > offset {
+                true => {
+                    None
+                },
+                false => {
+                    None
+                },
+            };
+            Some(epoch::Epoch {
+                date : chrono::naivedatetime::from_str(datetime, "YYYY-mm-dd:HH:MM:SS")
+                    .unwrap(), 
+                flag : flag.unwrap_or(epoch::EpochFlag::Ok),
+            })
+        },
+        None => None,
+    };
+    println!("SPLIT EPOCH: {:?}", split_epoch);
     let splice = matches.is_present("splice");
     
     // `Epoch`

@@ -59,6 +59,14 @@ pub fn main () {
         Some(s) => Some(s.split(",").collect()),
         _ => None,
     };
+    let lli : Option<u8> = match matches.value_of("lli") {
+        Some(s) => Some(u8::from_str_radix(s,10).unwrap()),
+        _ => None,
+    };
+    let ssi : Option<observation::Ssi> = match matches.value_of("ssi") {
+        Some(s) => Some(observation::Ssi::from_str(s).unwrap()),
+        _ => None,
+    };
 
     // file paths 
     let filepaths : Vec<&str> = matches.value_of("filepath")
@@ -251,6 +259,64 @@ for fp in &filepaths {
                     }
                 }
                 rinex.record = Record::MeteoRecord(rework)
+            },
+            _ => {},
+        }
+    }
+    //[4*] LLI filter
+    if let Some(lli) = lli {
+        match &rinex.header.rinex_type {
+            Type::ObservationData => {
+                let mut rework = observation::Record::new();
+                for (epoch, (ck,data)) in rinex.record.as_obs().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, observation::ObservationData>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        let mut inner : HashMap<String, observation::ObservationData> = HashMap::new();
+                        for (code, data) in data.iter() {
+                            if let Some(lli_flags) = data.lli {
+                                if lli_flags == lli { 
+                                    inner.insert(code.clone(), data.clone());
+                                }
+                            }
+                        }
+                        if inner.len() > 0 {
+                            map.insert(*sv, inner);
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, (*ck, map));
+                    }
+                }
+                rinex.record = Record::ObsRecord(rework)
+            },
+            _ => {},
+        }
+    }
+    //[4*] SSI filter
+    if let Some(ssi) = ssi {
+        match &rinex.header.rinex_type {
+            Type::ObservationData => {
+                let mut rework = observation::Record::new();
+                for (epoch, (ck,data)) in rinex.record.as_obs().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, observation::ObservationData>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        let mut inner : HashMap<String, observation::ObservationData> = HashMap::new();
+                        for (code, data) in data.iter() {
+                            if let Some(ssi_value) = data.ssi {
+                                if ssi_value >= ssi { 
+                                    inner.insert(code.clone(), data.clone());
+                                }
+                            }
+                        }
+                        if inner.len() > 0 {
+                            map.insert(*sv, inner);
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, (*ck, map));
+                    }
+                }
+                rinex.record = Record::ObsRecord(rework)
             },
             _ => {},
         }

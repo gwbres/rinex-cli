@@ -36,6 +36,23 @@ args:
         long: obscodes
         takes_value: false
         help: Display (print) encountered OBS codes on a Satellite Vehicule basis
+    - sv:
+        long: sv
+        takes_value: true
+        help: Comma separated Satellite Vehicule filter. Retain only matching Satellite Vehicules.
+    - codes:
+        short: c
+        long: codes 
+        takes_value: true
+        help: Comma separated OBS code filter - retain only matching OBS codes (Meteo or OBS data)
+    - lli:
+        long: lli
+        takes_value: true 
+        help: Retain only OBS data that have these LLI flags asserted 
+    - ssi:
+        long: ssi
+        takes_value: true 
+        help: Retain only OBS data that have at least this SSI signal strength indication attached to them (x >= SSI is retained) 
     - pseudorange:
         long: pseudorange
         help: Converts all pseudo range data to meter for convenience
@@ -47,15 +64,6 @@ args:
         long: event-filter
         takes_value: true
         help: Retain only data that match given Epoch Event flag
-    - codes:
-        short: c
-        long: codes 
-        takes_value: true
-        help: Comma separated OBS code filter - retain only matching OBS codes (Meteo or OBS data)
-    - sv:
-        long: sv
-        takes_value: true
-        help: Comma separated Satellite Vehicule filter. Retain only matching Satellite Vehicules.
     - merge:
         short: m
         long: merge
@@ -70,12 +78,6 @@ args:
         long: splice
         takes_value: true
         help: Retain only desired epoch interval from given file
-    - quality:
-        short: q
-        long: quality
-        takes_value: true
-        possible_values: ["weak","strong","excellent"]
-        help: Retain data that matches at least given criteria
     - write:
         short: w
         long: write

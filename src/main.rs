@@ -19,12 +19,10 @@ use rinex::constellation::Constellation;
 pub fn main () {
 	let yaml = load_yaml!("cli.yml");
     let app = App::from_yaml(yaml);
-    //let _ = app.print_help();
-    //println!("\n");
-
 	let matches = app.get_matches();
 
     // General
+    let header = matches.is_present("header");
     let resampling = matches.is_present("resampling");
     let decimate = matches.is_present("decimate");
     let merge = matches.is_present("merge");
@@ -53,7 +51,7 @@ pub fn main () {
         _ => None,
     };
 
-    // OBS | METEO
+    // Data Filters 
     let obscode_display = matches.is_present("obscodes");
     let obscode_filter : Option<Vec<&str>> = match matches.value_of("codes") {
         Some(s) => Some(s.split(",").collect()),
@@ -74,6 +72,10 @@ pub fn main () {
             .split(",")
             .collect();
 
+    let mut index : usize = 0;
+    let mut merged: Rinex = Rinex::default();
+    let mut to_merge : Vec<Rinex> = Vec::new(); 
+
 for fp in &filepaths {
     let path = std::path::PathBuf::from(fp);
     let mut rinex = match path.exists() {
@@ -91,6 +93,13 @@ for fp in &filepaths {
             continue
         },
     };
+
+    if index == 0 {
+        merged = rinex.clone()
+    } else {
+        to_merge.push(rinex.clone())
+    }
+    index += 1;
 
     // [1] resampling
     if resampling {
@@ -356,24 +365,24 @@ for fp in &filepaths {
        println!("splice is WIP"); 
     }
     
-    if epoch_display {
+    if header {
+        println!("*******************************");
+        println!("HEADER in \"{}\"\n{:#?}", fp, rinex.header);
+        println!("*******************************");
+    }
+    
+    if epoch_display && !merge {
         let e : Vec<_> = match rinex.header.rinex_type {
-            Type::ObservationData => {
-                rinex.record.as_obs().unwrap().keys().collect()
-            }
-            Type::NavigationData => {
-                rinex.record.as_nav().unwrap().keys().collect()
-            },
-            Type::MeteoData => {
-                rinex.record.as_meteo().unwrap().keys().collect()
-            },
+            Type::ObservationData => rinex.record.as_obs().unwrap().keys().collect(),
+            Type::NavigationData => rinex.record.as_nav().unwrap().keys().collect(),
+            Type::MeteoData => rinex.record.as_meteo().unwrap().keys().collect(),
         };
         println!("*******************************");
         println!("Epochs in \"{}\"\n{:#?}", fp, e);
         println!("*******************************");
     }
 
-    if obscode_display {
+    if obscode_display && !merge {
         let obs = rinex.header.obs_codes
             .unwrap();
         println!("*******************************");
@@ -381,11 +390,7 @@ for fp in &filepaths {
         println!("*******************************");
     }
 
-    if merge {
-        println!("MERGE() is WIP");
-    }
-
-    if !epoch_display && !obscode_display {
+    if !epoch_display && !obscode_display && !header && !merge {
         match rinex.header.rinex_type {
             Type::ObservationData => println!("OBS RECORD \n{:#?}", rinex.record.as_obs().unwrap()),
             Type::NavigationData => println!("NAV RECORD \n{:#?}", rinex.record.as_nav().unwrap()),
@@ -394,4 +399,38 @@ for fp in &filepaths {
     }
 
 }// for all files
+    
+    // Merge() opt
+    for i in 0..to_merge.len() {
+        if merged.merge(&to_merge[i]).is_err() {
+            println!("Failed to merge {} into {}", filepaths[i], filepaths[0])
+        }
+    }
+
+    if obscode_display && merge {
+        let obs = merged.header.obs_codes
+            .unwrap();
+        println!("****************************");
+        println!("OBS in MERGED record\n{:#?}", obs);
+        println!("***************************");
+    }
+
+    if epoch_display && merge {
+        let e : Vec<_> = match merged.header.rinex_type {
+            Type::ObservationData => merged.record.as_obs().unwrap().keys().collect(),
+            Type::NavigationData => merged.record.as_nav().unwrap().keys().collect(),
+            Type::MeteoData => merged.record.as_meteo().unwrap().keys().collect(),
+        };
+        println!("*******************************");
+        println!("Epochs in MERGED record\n{:#?}", e);
+    }
+
+    if !epoch_display && !obscode_display && merge {
+        match merged.header.rinex_type {
+            Type::ObservationData => println!("OBS RECORD \n{:#?}", merged.record.as_obs().unwrap()),
+            Type::NavigationData => println!("NAV RECORD \n{:#?}", merged.record.as_nav().unwrap()),
+            Type::MeteoData => println!("METEO RECORD \n{:#?}", merged.record.as_meteo().unwrap()),
+        }
+    }
+
 }// main

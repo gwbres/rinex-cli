@@ -127,7 +127,7 @@ Example:
 cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx -c L1C,S1P 
 ```
 
-### Cumulated filter
+### Cummulated filter
 
 All arguments can be cummulated,
 for example:
@@ -138,3 +138,21 @@ cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx \
     -c C1C,C2C,C1X --sv G01,E06,G24,E24
 ```
 will only retain pseudo range measurements for given satellite of interest.
+
+## `Merge` special operation
+
+It is possible to perform merging operations with `-m` or `--merge`, in `teqc` similar fashion.
+
+When merging, if analysis are to be performed, they will be performed on the resulting record.
+
+For example:
+
+```shell
+# (1)
+cargo run -fp /tmp/file1.obs,/tmp/file2.obs -o -e > infos.txt
+# is identical to (2)
+cargo run -fp /tmp/file1.obs,/tmp/file2.obs -m -o -e > infos.txt
+```
+
+In (1) we perform -o and -e obscodes and timestamps extraction.   
+In (2) similar operation is performed but after merging both files.

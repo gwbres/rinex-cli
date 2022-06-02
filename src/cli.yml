@@ -8,6 +8,11 @@ args:
         required: true
         takes_value: true
         help: Comma separated RINEX files
+    - header:
+        short: h
+        long: header
+        takes_value: false
+        help: Display (print) header fields (as is..)
     - decim:
         short: d
         long: decim
@@ -68,18 +73,13 @@ args:
         short: m
         long: merge
         takes_value: false
-        help: Merge given files together
+        help: Merge given files together. If analysis are performed, they will be performed on resulting record
     - split:
         short: s
         long: split
         takes_value: true
-        help: Split given file into two at specified epoch
+        help: Split given file(s) into two at specified epoch
     - splice:
         long: splice
         takes_value: true
         help: Retain only desired epoch interval from given file
-    - write:
-        short: w
-        long: write
-        takes_value: true
-        help: Write result into given destination

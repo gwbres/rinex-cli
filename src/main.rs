@@ -5,6 +5,7 @@
 use clap::App;
 use clap::load_yaml;
 use std::str::FromStr;
+use std::collections::HashMap;
 
 use rinex::Rinex;
 use rinex::sv::Sv;
@@ -146,6 +147,7 @@ for fp in &filepaths {
             _ => {},
         }
     }
+    // [2*] !epoch::ok filter
     if epoch_nok_filter {
         match &rinex.header.rinex_type {
             Type::ObservationData => {
@@ -186,43 +188,77 @@ for fp in &filepaths {
     if let Some(ref filter) = sv_filter {
         match &rinex.header.rinex_type {
             Type::ObservationData => {
-                /*let filtered : Vec<_> = rinex.record
-                    .as_obs()
-                    .unwrap()
-                    .iter()
-                    .map(|(e, (ck, sv))| {
-                        sv.iter()
-                            .find(|(k, _)| filter.contains(k))
-                            .map(|(k, data)| {
-                                (e, ck, (k, data))
-                            })
-                    })
-                    .flatten()
-                    .collect();
-                println!("SV FILTERED: {:#?}", filtered);
-                let mut result = observation::Record::new();
-                for (e, data) in filtered {
-                    result.insert(*e, data.clone());
+                let mut rework = observation::Record::new();
+                for (epoch, (ck,data)) in rinex.record.as_obs().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, observation::ObservationData>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        if filter.contains(sv) {
+                            map.insert(*sv, data.clone());
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, (*ck, map));
+                    }
                 }
-                let mut result = observation::Record::new();
-                for (e, data) in filtered {
-                    result.insert(e, data);
-                }      
-                rinex.record = Record::ObsRecord(result)*/
-                let filtered : Vec<_> = rinex.record
-                    .as_obs()
-                    .unwrap()
-                    .iter()
-                    .filter(|(epoch, (ck, sv))| {
-                        epoch.flag.is_ok()
-                    })
-                    .collect();
-                println!("filtered : {:#?}", filtered);
-                /*let mut rework = observation::Record::new();
-                for entry in filtered {
-                    let (epoch, ck, sv, data) = entry;
-                    rework.insert(e, (*ck, (sv,data))); 
-                }*/
+                rinex.record = Record::ObsRecord(rework)
+            },
+            Type::NavigationData => {
+                let mut rework = navigation::Record::new();
+                for (epoch, data) in rinex.record.as_nav().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, navigation::ComplexEnum>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        if filter.contains(sv) {
+                            map.insert(*sv, data.clone());
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, map);
+                    }
+                }
+                rinex.record = Record::NavRecord(rework)
+            },
+            _ => {},
+        }
+    }
+
+    // [4] OBS code filter
+    if let Some(ref filter) = obscode_filter {
+        match &rinex.header.rinex_type {
+            Type::ObservationData => {
+                let mut rework = observation::Record::new();
+                for (epoch, (ck,data)) in rinex.record.as_obs().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, observation::ObservationData>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        let mut inner : HashMap<String, observation::ObservationData> = HashMap::new();
+                        for (code, data) in data.iter() {
+                            if filter.contains(&code.as_str()) {
+                                inner.insert(code.clone(), data.clone());
+                            }
+                        }
+                        if inner.len() > 0 {
+                            map.insert(*sv, inner);
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, (*ck, map));
+                    }
+                }
+                rinex.record = Record::ObsRecord(rework)
+            },
+            Type::MeteoData => {
+                let mut rework = meteo::Record::new();
+                for (epoch, data) in rinex.record.as_meteo().unwrap().iter() {
+                    let mut map : HashMap<String, f32> = HashMap::new(); 
+                    for (code, data) in data.iter() {
+                        if filter.contains(&code.as_str()) {
+                            map.insert(code.clone(), *data);
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, map);
+                    }
+                }
+                rinex.record = Record::MeteoRecord(rework)
             },
             _ => {},
         }

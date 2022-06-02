@@ -260,7 +260,27 @@ for fp in &filepaths {
                 }
                 rinex.record = Record::MeteoRecord(rework)
             },
-            _ => {},
+            Type::NavigationData => {
+                let mut rework = navigation::Record::new();
+                for (epoch, data) in rinex.record.as_nav().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, navigation::ComplexEnum>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        let mut inner : HashMap<String, navigation::ComplexEnum> = HashMap::new();
+                        for (code, data) in data.iter() {
+                            if filter.contains(&code.as_str()) {
+                                inner.insert(code.clone(), data.clone());
+                            }
+                        }
+                        if inner.len() > 0 {
+                            map.insert(*sv, inner);
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, map);
+                    }
+                }
+                rinex.record = Record::NavRecord(rework)
+            },
         }
     }
     //[4*] LLI filter

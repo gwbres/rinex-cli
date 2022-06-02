@@ -12,12 +12,34 @@ This command line interface implements the latest
 [Rinex crate](https://crates.io/crates/rinex)
 and allows easy RINEX files manipulation.
 
+## RINEX
+
+Why this tool ?
+
+RINEX are very common worldwide, they are used in GNSS, timing and navigation related applications
+:rocket: :satellite: :earth_americas:.
+
+RINEX are complex files, several kinds exist, they differ a lot from one another.  
+This tool is powerful enough to manage almost all revisions and most common RINEX files,
+without compromising ease of use.
+
+## Compressed Data
+
+RINEX files are huge and so, are most of the time compressed.
+
+It is possible for this tool to analyze a Hatanaka compressed RINEX (also called CRINEX) file directly.
+That means, you don't have to run extra tools like `CRX2RNX` before running an analysis.
+
+It is not possible to analyze a .gz or other compression method stacked on top of a CRINEX
+at this moment. Therefore the user should uncompress the file, for instance with "gunzip -d" prior
+running an anlysis.
+
 ## Getting started
 
 Run with `cargo`
 
 ```bash
-cargo run
+cargo run -- --help
 ```
 
 Filepath : -fp or --filepath, to select local RINEX files 
@@ -27,12 +49,7 @@ cargo run --filepath /tmp/amel010.21g
 cargo run --filepath /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 ```
 
-Compressed OBS are natively supported.
-
-&#9888; for V > 2 RINEX OBS, this parser expects
-single line epochs (resulting from RNX2CRX compression). 
-
-
+## General info
 This tool currently has 3 opmodes:
 
 * -e will print encountered epochs (sampling timestamps)

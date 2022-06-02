@@ -63,23 +63,45 @@ cargo run --filepath /tmp/amel010.21g
 cargo run --filepath /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 ```
 
-## General info
-This tool currently has 3 opmodes:
+This tool currently has 4 modes of operation:
 
-* -e will print encountered epochs (sampling timestamps)
-* -o can be combined to -e, will print encountered OBS codes, useful to
-determine which data we can filter out
+* (1) -e will print encountered epochs (sampling timestamps) to stdout.
+The user can pipe stdout to a file to save this data.
 
-Otherwise (nominal op), -e and/or -o are not requested.
+* (2) -o will print encountered OBS codes to stdout. 
+The user can pipe stdout to a file to save this data.
+If we're dealing with NAV file(s), we actually print the data identification codes
+
+* (1+2) -e and -o can be combined and used at the same time
+
+* (3) when -e and -o are not passed, this tool will 
+print the extracted / filtered data to stdout once again.
+To learn how to filter data efficiently, refer to the following examples 
+
+* (4) when -m or --merge is passed, a `merging` operation is to be performed.
+It is possible to perform -e (1), -o (2) (1+2) or or any (3) analysis on the resulting merged RINEX file.
+When merging, we aim at creating a new valid RINEX file. 
+In this special case, an output file is created. 
 
 Example :
 
 ```shell
-# determine available data
-cargo run -- --fp /tmp/data.obs -e > info.txt
-cargo run -- --fp /tmp/data.obs -o -e > info.txt
-# nominal use
+# Print encountered timestamps 
+cargo run -- --fp /tmp/data.obs -e
+# Print encountered timestamps + OBS codes 
+cargo run -- --fp /tmp/data.obs -o -e
+# Dump into a file 
+cargo run -- --fp /tmp/data.obs -o > infos.txt
+
+# nominal use: record is printed (without filtering)
 cargo run -- --fp /tmp/data.obs > data.txt
+
+# nominal use: record is printed (with some filters)
+cargo run -- --fp /tmp/data.obs \
+    -sv G01,E6,R24,R3 -c C1C,C1X > data.txt
+
+# special opmode
+cargo run -- --fp /tmp/data1.obs,/tmp/data2.obs 
 ```
 
 ### Epoch filter
@@ -109,6 +131,29 @@ Will only retain data from GPS 1+2, GAL 6+24 and GLO 24 vehicules.
 
 Constellation filter is not feasible at the moment
 
+### LLI : RX condition filter
+
+Observation data might have LLI flags attached to them.  
+It is possible to filter data that have a matching LLI flag,
+for instance 0x01 means Loss of Lock at given epoch:
+
+```shell
+cargo run -- -fp /tmp/data.obs --lli 1 --sv R01 > output.txt
+```
+
+### SSI: signal "quality" filter
+
+Observation data might have an SSI indication attached to them.
+It is possible to filter data according to this value and
+retain only data with a certain "quality" attached to them.
+
+For example, with this value, we only retain data with SSI >= 5
+that means at least 30 dB SNR 
+
+```shell
+cargo run -- -fp /tmp/data.obs --ssi 1 --sv R01 > output.txt
+```
+
 ### Data filter
 
 We use the -c or --code argument to filter data out
@@ -133,11 +178,12 @@ All arguments can be cummulated,
 for example:
 
 ```bash
-# Retain Carrier phase + Carrier power 
 cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx \
-    -c C1C,C2C,C1X --sv G01,E06,G24,E24
+    --lli 0 # "OK" \
+        --ssi 5 # not bad \
+            -c C1C,C2C,C1X # PR measurements \
+                --sv G01,E06,G24,E24 # focus
 ```
-will only retain pseudo range measurements for given satellite of interest.
 
 ## `Merge` special operation
 

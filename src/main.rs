@@ -19,8 +19,8 @@ use rinex::constellation::Constellation;
 pub fn main () {
 	let yaml = load_yaml!("cli.yml");
     let mut app = App::from_yaml(yaml);
-    let _ = app.print_help();
-    println!("\n");
+    //let _ = app.print_help();
+    //println!("\n");
 
 	let matches = app.get_matches();
 

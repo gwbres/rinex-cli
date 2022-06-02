@@ -18,7 +18,7 @@ use rinex::constellation::Constellation;
 
 pub fn main () {
 	let yaml = load_yaml!("cli.yml");
-    let mut app = App::from_yaml(yaml);
+    let app = App::from_yaml(yaml);
     //let _ = app.print_help();
     //println!("\n");
 
@@ -60,6 +60,11 @@ pub fn main () {
     };
 
     let obscode_display = matches.is_present("obscodes");
+    // raw OBS
+    let pseudorange = matches.is_present("pseudorange");
+    let raw_phase = matches.is_present("phase");
+    let doppler = matches.is_present("doppler");
+    let sigstrength = matches.is_present("sigstrength");
 
     // file paths 
     let filepaths : Vec<&str> = matches.value_of("filepath")
@@ -110,29 +115,36 @@ for fp in &filepaths {
     }
 
     // [3] sv filter
-    if let Some(ref filter) = sv_filter {
+    /*if let Some(ref filter) = sv_filter {
         match &rinex.header.rinex_type {
             Type::ObservationData => {
                 let filtered : Vec<_> = rinex.record
                     .as_obs()
                     .unwrap()
                     .iter()
-                    .map(|(_e, (_ck, sv))| {
-                        sv.iter() 
-                            .find(|(v, _)| {
-                                 filter.contains(v)
+                    .map(|(e, (ck, sv))| {
+                        sv.iter()
+                            .find(|(k, _)| filter.contains(k))
+                            .map(|(k, data)| {
+                                (e, ck, (k, data))
                             })
                     })
+                    .flatten()
                     .collect();
+                println!("SV FILTERED: {:#?}", filtered);
                 let mut result = observation::Record::new();
-                /*for (e, data) in filtered {
+                for (e, data) in filtered {
+                    result.insert(*e, data.clone());
+                }
+                let mut result = observation::Record::new();
+                for (e, data) in filtered {
                     result.insert(e, data);
-                } */       
+                }      
                 rinex.record = Record::ObsRecord(result)
             },
             _ => {},
         }
-    }
+    }*/
         
     if split {
        println!("split is WIP"); 
@@ -180,29 +192,38 @@ for fp in &filepaths {
             Type::MeteoData => println!("METEO RECORD \n{:#?}", rinex.record.as_meteo().unwrap()),
         }
     }
-/*
-    // OBS data filter and manipulation
-    if obs {
-        let record = rinex.record.as_ref()
-            .unwrap();
-        let e : Vec<_> = match rinex.header.rinex_type {
-            Type::ObservationData => {
-                record.as_obs().unwrap()
-                .keys()
-                    .map(|epoch| {
-                        
+
+    if pseudorange || sigstrength || doppler || raw_phase {
+        let data : Vec<_> = rinex.record
+            .as_obs()
+            .unwrap()
+            .iter()
+            .map(|(epoch, (_, sv))| {
+                sv.iter()
+                    .map(|(_, obs)| {
+                        obs.iter()
+                            .find(|(code, data)| {
+                                let mut ok = false;
+                                if pseudorange {
+                                    ok |= rinex::is_pseudo_range_obs_code!(code) 
+                                }
+                                if sigstrength {
+                                    ok |= rinex::is_sig_strength_obs_code!(code) 
+                                }
+                                if doppler {
+                                    ok |= rinex::is_doppler_obs_code!(code) 
+                                }
+                                if raw_phase {
+                                    ok |= rinex::is_phase_carrier_obs_code!(code) 
+                                }
+                                ok
+                            })
                     })
-                    .sorted()
-                    .collect()
-            },
-            Type::MeteorologicalData => {
-            },
-        };
-        println!("*******************************");
-        println!("OBS DATA for \"{}\"\n{:#?}", file_paths[i], e);
-        println!("*******************************");
-    } // OBS flag
-*/
+            })
+            .flatten()
+            .collect();
+        println!("DATA: {:#?}", data); 
+    }
 
 }// for all files
 }// main

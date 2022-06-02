@@ -32,6 +32,18 @@ args:
         long: obscodes
         takes_value: false
         help: Display (print) encountered OBS codes on a Satellite Vehicule basis
+    - pseudorange:
+        long: pseudorange
+        help: Display OBS Pseudo Range Data
+    - phase:
+        long: phase
+        help: Display OBS Phase Data
+    - doppler:
+        long: doppler 
+        help: Display OBS Doppler Data
+    - sigstrengh:
+        long: sigstrength
+        help: DIsplay OBS Sig Strength Data
     - events:
         long: events
         takes_value: false 

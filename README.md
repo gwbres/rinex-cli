@@ -20,8 +20,7 @@ Run with `cargo`
 cargo run
 ```
 
-Filepath : -fp or --filepath   
-Lets you select local RINEX files:
+Filepath : -fp or --filepath, to select local RINEX files 
 
 ```bash
 cargo run --filepath /tmp/amel010.21g
@@ -33,89 +32,79 @@ Compressed OBS are natively supported.
 &#9888; for V > 2 RINEX OBS, this parser expects
 single line epochs (resulting from RNX2CRX compression). 
 
-Epoch flag : -e    
-Using this flag will print all encountered epochs.
 
-Epoch-ok: --epoch-eok
-Will restrict all maniuplations to epochs that have an `EpochFlag::Ok` flag
-associated to them.
+This tool currently has 3 opmodes:
 
-## GNSS constellation filter
+* -e will print encountered epochs (sampling timestamps)
+* -o can be combined to -e, will print encountered OBS codes, useful to
+determine which data we can filter out
 
-Constellation : -c or --constellation   
-lets you filter and retain satelllite vehicules that
-have are associated to these constellations.
+Otherwise (nominal op), -e and/or -o are not requested.
 
-For example:
-```bash
-cargo run --filepath amel010.21g -c GLO
+Example :
+
+```shell
+# determine available data
+cargo run -- --fp /tmp/data.obs -e > info.txt
+cargo run -- --fp /tmp/data.obs -o -e > info.txt
+# nominal use
+cargo run -- --fp /tmp/data.obs > data.txt
 ```
 
-will retain only Glonass vehicules
+### Epoch filter
 
-```bash
-cargo run -fp amel010.21g -c GLO,E
+* --epoch-ok : will retain only valid epoch, ie.,
+epochs that have an Epoch::Flag::Ok attached to them
+
+* --epoch-nok : will retain only non valid epoch, ie.,
+epochs that have an !Epoch::Flag::Ok attached to them
+
+Epoch filter only makes sense on OBS data (meteo or obs).
+
+### Satellite vehicule filter
+
+* --sv with a comma separated list of satellite vehicule to retain
+
+Example:
+
+```shell
+cargo run -- --filepath /tmp/data.obs --epoch-ok --sv G01,G2,E06,E24,R24 > data.txt
 ```
 
-will retain both Glonass and Galileo
-satellite vehicules
+Will only retain data from GPS 1+2, GAL 6+24 and GLO 24 vehicules.
 
-Constellation identification supports:
-* standard 3 letter RINEX identification code
-* standard 1 character RINEX identification code
-* full name
 
-## Satellite vehicule filters
+### Constellation filter
 
-Sv: -v or --vehicule  
-lets you select matching satellite vehicules
+Constellation filter is not feasible at the moment
 
-```bash
-cargo run -fp amel010.21g -v R04
-```
+### Data filter
 
-Only R04 to be retained
+We use the -c or --code argument to filter data out
+and only retain data of interest.
 
-```bash
-cargo run -fp amel010.21g --vehicule R04,E10
-```
-
-will study R04 and E10
-
-## Navigation data
-
-Nav : -n or --navigation   
-Lets you select NAV file data fields
-
-```bash
-cargo run -fp amel010.21g --nav iode,health
-```
-
+* Observation / meteo data: we use the OBS code directly
+* Navigation data: we use the official identification keyword,
+refero to the known
 Refer to the known
 [NAV fields database](https://github.com/gwbres/rinex/blob/main/navigation.json)
 
-## Observation data
-Obs : -o or --observation   
-Lets you select OBS code of interests.   
-These work for both METEO and OBS data
+
+Example:
 
 ```bash
-cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx -o L1C,S1P 
+# Retain Carrier phase + Carrier power 
+cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx -c L1C,S1P 
 ```
 
-Codes must be valid and encountered OBS codes.
+### Cumulated filter
 
-## Output format
+All arguments can be cummulated,
+for example:
 
-Default format is purely stdout.   
-
---csv lets you output all the data into csv format   
-Will create 1 csv file per RINEX file, same name, created locally.   
---prefix moves the output file location   
---plot will not print but plot all data using this lib ...   
-Will create 1 plot per file
-
-## TODO
-
-[ ] Pretty print?
-[ ] graphix pleaz
+```bash
+# Retain Carrier phase + Carrier power 
+cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx \
+    -c C1C,C2C,C1X --sv G01,E06,G24,E24
+```
+will only retain pseudo range measurements for given satellite of interest.

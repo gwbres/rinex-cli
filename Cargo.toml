@@ -11,6 +11,6 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
-rinex = "0.3.2" 
+rinex = { git = "https://github.com/gwbres/rinex", branch = "main" }
 itertools = "0.10.3"
 clap = { version = "~2.27.0", features = ["yaml"] }

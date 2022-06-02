@@ -365,7 +365,7 @@ for fp in &filepaths {
        println!("splice is WIP"); 
     }
     
-    if header {
+    if header && !merge {
         println!("*******************************");
         println!("HEADER in \"{}\"\n{:#?}", fp, rinex.header);
         println!("*******************************");
@@ -407,8 +407,15 @@ for fp in &filepaths {
         }
     }
 
+    if header && merge {
+        println!("****************************");
+        println!("MERGED RINEX\n{:#?}", merged.header);
+        println!("***************************");
+    }
+
     if obscode_display && merge {
         let obs = merged.header.obs_codes
+            .as_ref()
             .unwrap();
         println!("****************************");
         println!("OBS in MERGED record\n{:#?}", obs);
@@ -425,11 +432,17 @@ for fp in &filepaths {
         println!("Epochs in MERGED record\n{:#?}", e);
     }
 
-    if !epoch_display && !obscode_display && merge {
+    /*if !epoch_display && !obscode_display && merge {
         match merged.header.rinex_type {
             Type::ObservationData => println!("OBS RECORD \n{:#?}", merged.record.as_obs().unwrap()),
             Type::NavigationData => println!("NAV RECORD \n{:#?}", merged.record.as_nav().unwrap()),
             Type::MeteoData => println!("METEO RECORD \n{:#?}", merged.record.as_meteo().unwrap()),
+        }
+    }*/
+
+    if merge {
+        if merged.to_file("merged.txt").is_err() {
+            println!("Failed to write MERGED RINEX to \"merged.txt\"")
         }
     }
 

@@ -219,6 +219,7 @@ for fp in &filepaths {
                                 ok
                             })
                     })
+                    .flatten()
             })
             .flatten()
             .collect();

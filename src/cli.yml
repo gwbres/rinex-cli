@@ -18,15 +18,19 @@ args:
         long: resample
         takes_value: true
         help: Resample data record to match this duration
+    - epoch-ok:
+        long: epoch-ok 
+        takes_value: false 
+        help: Retain epoch that have an EpochFlag::ok value only 
+    - epoch-nok:
+        long: epoch-nok
+        takes_value: false
+        help: Retain epoch that do not have an EpochFlag::ok attached to them
     - epoch:
         short: e 
         long: epoch 
         takes_value: false 
         help: Display (print) identified epochs
-    - epoch-ok:
-        long: epoch-ok 
-        takes_value: false 
-        help: Retain epoch that have an EpochFlag::ok value only 
     - obscodes:
         short: o
         long: obscodes

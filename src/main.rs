@@ -35,6 +35,7 @@ pub fn main () {
     // `Epoch`
     let epoch_display = matches.is_present("epoch");
     let epoch_ok_filter = matches.is_present("epoch-ok");
+    let epoch_nok_filter = matches.is_present("epoch-nok");
     
     // `Sv`
     let sv_filter : Option<Vec<Sv>> = match matches.value_of("sv") {
@@ -111,14 +112,81 @@ for fp in &filepaths {
 
     // [2] epoch::ok filter
     if epoch_ok_filter {
-        rinex.cleanup()
-    }
-
-    // [3] sv filter
-    /*if let Some(ref filter) = sv_filter {
         match &rinex.header.rinex_type {
             Type::ObservationData => {
                 let filtered : Vec<_> = rinex.record
+                    .as_obs()
+                    .unwrap()
+                    .iter()
+                    .filter(|(epoch, (_, _))| {
+                        epoch.flag.is_ok()
+                    })
+                    .collect();
+                let mut rework = observation::Record::new();
+                for (e, data) in filtered {
+                    rework.insert(*e, data.clone());
+                }
+                rinex.record = Record::ObsRecord(rework)
+            },
+            Type::MeteoData => {
+                let filtered : Vec<_> = rinex.record
+                    .as_meteo()
+                    .unwrap()
+                    .iter()
+                    .filter(|(epoch, _)| {
+                        epoch.flag.is_ok()
+                    })
+                    .collect();
+                let mut rework = meteo::Record::new();
+                for (e, data) in filtered {
+                    rework.insert(*e, data.clone());
+                }
+                rinex.record = Record::MeteoRecord(rework)
+            },
+            _ => {},
+        }
+    }
+    if epoch_nok_filter {
+        match &rinex.header.rinex_type {
+            Type::ObservationData => {
+                let filtered : Vec<_> = rinex.record
+                    .as_obs()
+                    .unwrap()
+                    .iter()
+                    .filter(|(epoch, (_, _))| {
+                        !epoch.flag.is_ok()
+                    })
+                    .collect();
+                let mut rework = observation::Record::new();
+                for (e, data) in filtered {
+                    rework.insert(*e, data.clone());
+                }
+                rinex.record = Record::ObsRecord(rework)
+            },
+            Type::MeteoData => {
+                let filtered : Vec<_> = rinex.record
+                    .as_meteo()
+                    .unwrap()
+                    .iter()
+                    .filter(|(epoch, _)| {
+                        !epoch.flag.is_ok()
+                    })
+                    .collect();
+                let mut rework = meteo::Record::new();
+                for (e, data) in filtered {
+                    rework.insert(*e, data.clone());
+                }
+                rinex.record = Record::MeteoRecord(rework)
+            },
+            _ => {},
+        }
+    }
+
+    // [3] sv filter
+    if let Some(ref filter) = sv_filter {
+        match &rinex.header.rinex_type {
+            Type::ObservationData => {
+                /*let filtered : Vec<_> = rinex.record
                     .as_obs()
                     .unwrap()
                     .iter()
@@ -140,11 +208,25 @@ for fp in &filepaths {
                 for (e, data) in filtered {
                     result.insert(e, data);
                 }      
-                rinex.record = Record::ObsRecord(result)
+                rinex.record = Record::ObsRecord(result)*/
+                let filtered : Vec<_> = rinex.record
+                    .as_obs()
+                    .unwrap()
+                    .iter()
+                    .filter(|(epoch, (ck, sv))| {
+                        epoch.flag.is_ok()
+                    })
+                    .collect();
+                println!("filtered : {:#?}", filtered);
+                /*let mut rework = observation::Record::new();
+                for entry in filtered {
+                    let (epoch, ck, sv, data) = entry;
+                    rework.insert(e, (*ck, (sv,data))); 
+                }*/
             },
             _ => {},
         }
-    }*/
+    }
         
     if split {
        println!("split is WIP"); 

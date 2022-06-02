@@ -2,37 +2,47 @@
 //! Refer to README for command line arguments.    
 //! Based on crate <https://github.com/gwbres/rinex>     
 //! Homepage: <https://github.com/gwbres/rinex-cli>
-use std::str::FromStr;
-
 use clap::App;
 use clap::load_yaml;
-use itertools::Itertools;
+use std::str::FromStr;
 
 use rinex::Rinex;
-use rinex::Type;
-use rinex::record::Sv;
+use rinex::sv::Sv;
+use rinex::types::Type;
+use rinex::epoch;
+use rinex::types;
+use rinex::meteo;
+use rinex::observation;
+use rinex::navigation;
+use rinex::record::Record;
 use rinex::constellation::Constellation;
 
 pub fn main () {
 	let yaml = load_yaml!("cli.yml");
     let mut app = App::from_yaml(yaml);
-    app.print_help();
+    let _ = app.print_help();
     println!("\n");
 
 	let matches = app.get_matches();
+
+    // General
+    let resampling = matches.is_present("resampling");
+    let decimate = matches.is_present("decimate");
+    let merge = matches.is_present("merge");
+    let split = matches.is_present("split");
+    let splice = matches.is_present("splice");
     
-    // `Epoch` filters
-    let epoch_filter = matches.is_present("epoch");
+    // `Epoch`
+    let epoch_display = matches.is_present("epoch");
     let epoch_ok_filter = matches.is_present("epoch-ok");
     
-    // `Sv` filters
-    let sv = matches.value_of("sv");
-    let sv_filters : Option<Vec<Sv>> = match matches.value_of("sv") {
+    // `Sv`
+    let sv_filter : Option<Vec<Sv>> = match matches.value_of("sv") {
         Some(s) => {
             let sv: Vec<&str> = s.split(",").collect();
             let mut sv_filters : Vec<Sv> = Vec::new();
             for s in sv {
-                let constell = Constellation::from_str(&s[0..0])
+                let constell = Constellation::from_str(&s[0..1])
                     .unwrap();
                 let prn = u8::from_str_radix(&s[1..], 10)
                     .unwrap();
@@ -43,23 +53,29 @@ pub fn main () {
         _ => None,
     };
 
-    // OBS data
-    let obs_filter = matches.is_present("observation");
-    let obs_code_filters = matches.value_of("observation");
-    
-    // NAV data
+    // OBS | METEO
+    let obscode_filter : Option<Vec<&str>> = match matches.is_present("codes") {
+        true => {
+            Some(matches.value_of("codes").unwrap()
+                .split(",")
+                .collect())
+        },
+        false => None,
+    };
 
-    // grab desired RINEX files
-    let file_paths : Vec<&str> = matches.value_of("filepath")
+    let obscode_display = matches.is_present("obscodes");
+
+    // file paths 
+    let filepaths : Vec<&str> = matches.value_of("filepath")
         .unwrap()
             .split(",")
             .collect();
-    
-for fp in &file_paths {
-    let p = std::path::PathBuf::from(fp);
-    let rinex = match p.exists() {
+
+for fp in &filepaths {
+    let path = std::path::PathBuf::from(fp);
+    let mut rinex = match path.exists() {
         true => {
-            if let Ok(r) = Rinex::from_file(&std::path::PathBuf::from(fp)) {
+            if let Ok(r) = Rinex::from_file(fp) {
                 println!("Parsed {:?} RINEX \"{}\"", r.header.rinex_type, fp); 
                 r
             } else {
@@ -73,37 +89,92 @@ for fp in &file_paths {
         },
     };
 
-    // epoch filter, sort, displayer
-    if epoch_filter {
-        let record = rinex.record.as_ref()
-            .unwrap();
+    // [1] resampling
+    if resampling {
+       println!("resampling is WIP"); 
+        let hms = matches.value_of("resampling").unwrap();
+        let hms : Vec<_> = hms.split(":").collect();
+        let (h,m,s) = (
+            u64::from_str_radix(hms[0], 10).unwrap(),
+            u64::from_str_radix(hms[1], 10).unwrap(),
+            u64::from_str_radix(hms[2], 10).unwrap(),
+        );
+        let interval = std::time::Duration::from_secs(h*3600 + m*60 +s);
+        rinex.resample(interval)
+    }
+    if decimate {
+       println!("resampling is WIP"); 
+        let r = u32::from_str_radix(matches.value_of("decimate").unwrap(), 10).unwrap();
+        rinex.decimate(r)
+    }
+
+    // [2] epoch::ok filter
+    if epoch_ok_filter {
+        rinex.cleanup()
+    }
+
+    // [3] sv filter
+    match &rinex.header.rinex_type {
+        Type::ObservationData => {
+            let filtered : Vec<_> = rinex.record
+                .as_obs()
+                .unwrap()
+                .iter()
+                .map(|(_e, (_ck, sv))| {
+                    sv.iter() 
+                        .find(|(v, _)| {
+                             *v == &Sv::new(Constellation::GPS, 1) 
+                        })
+                })
+                .collect();
+            let mut result = observation::Record::new();
+            /*for (e, data) in filtered {
+                result.insert(e, data);
+            } */       
+            rinex.record = Record::ObsRecord(result)
+        },
+        _ => {},
+    }
+        
+    if split {
+       println!("split is WIP"); 
+        /*let datetime = datetime::from_str("%%-%m-%d-%H:%M:%S").unwrap();
+        let e = epoch::Epoch::new(
+            datetime,
+            epoch::EpochFlag::Ok
+        );
+        let (r1, r2) = rinex.split(e);*/
+    }
+
+    if splice {
+       println!("splice is WIP"); 
+    }
+    
+    if epoch_display {
         let e : Vec<_> = match rinex.header.rinex_type {
-            Type::ObservationData => {
-                record.as_obs().unwrap()
-                    .keys()
-                    .map(|e| e.date)
-                    .sorted()
-                    .collect()
-            },
-            Type::NavigationMessage => {
-                record.as_nav().unwrap()
-                    .keys()
-                    .map(|e| e.date)
-                    .sorted()
-                    .collect()
-            },
-            Type::MeteorologicalData => {
-                record.as_meteo().unwrap()
-                    .keys()
-                    .map(|e| e.date)
-                    .sorted()
-                    .collect()
+            types::Type::ObservationData => {
+                rinex.record.as_obs().unwrap().keys().collect()
             }
+            types::Type::NavigationData => {
+                rinex.record.as_nav().unwrap().keys().collect()
+            },
+            types::Type::MeteoData => {
+                rinex.record.as_meteo().unwrap().keys().collect()
+            },
         };
         println!("*******************************");
-        println!("SORTED EPOCHS for \"{}\"\n{:#?}", fp, e);
+        println!("Epochs in \"{}\"\n{:#?}", fp, e);
         println!("*******************************");
-    } // epoch filter
+    }
+
+    if obscode_display {
+        let obs = rinex.header.obs_codes
+            .unwrap();
+        println!("*******************************");
+        println!("OBS in \"{}\"\n{:#?}", fp, obs);
+        println!("*******************************");
+    }
+
 /*
     // OBS data filter and manipulation
     if obs {

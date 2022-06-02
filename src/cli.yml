@@ -7,18 +7,70 @@ args:
         long: filepath
         required: true
         takes_value: true
-        help: Local RINEX file path
+        help: Comma separated RINEX files
+    - decim:
+        short: d
+        long: decim
+        takes_value: true
+        help: Decimate data record by this factor
+    - resample:
+        short: r
+        long: resample
+        takes_value: true
+        help: Resample data record to match this duration
     - epoch:
         short: e 
         long: epoch 
         takes_value: false 
-        help: Sort & display identified epochs
+        help: Display (print) identified epochs
     - epoch-ok:
         long: epoch-ok 
         takes_value: false 
         help: Retain epoch that have an EpochFlag::ok value only 
-    - observation:
-        short: o 
-        long: obs 
+    - obscodes:
+        short: o
+        long: obscodes
+        takes_value: false
+        help: Display (print) encountered OBS codes on a Satellite Vehicule basis
+    - events:
+        long: events
+        takes_value: false 
+        help: List all epoch events registered in the record, mostly relevant to OBS records
+    - event-filter:
+        long: event-filter
         takes_value: true
-        help: Retain epoch that have an EpochFlag::ok value only 
+        help: Retain only data that match given Epoch Event flag
+    - codes:
+        short: c
+        long: codes 
+        takes_value: true
+        help: Comma separated OBS code filter - retain only matching OBS codes (Meteo or OBS data)
+    - sv:
+        long: sv
+        takes_value: true
+        help: Comma separated Satellite Vehicule filter. Retain only matching Satellite Vehicules.
+    - merge:
+        short: m
+        long: merge
+        takes_value: false
+        help: Merge given files together
+    - split:
+        short: s
+        long: split
+        takes_value: true
+        help: Split given file into two at specified epoch
+    - splice:
+        long: splice
+        takes_value: true
+        help: Retain only desired epoch interval from given file
+    - quality:
+        short: q
+        long: quality
+        takes_value: true
+        possible_values: ["weak","strong","excellent"]
+        help: Retain data that matches at least given criteria
+    - write:
+        short: w
+        long: write
+        takes_value: true
+        help: Write result into given destination

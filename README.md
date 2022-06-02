@@ -36,6 +36,18 @@ It is not possible to analyze a .gz or other compression method stacked on top o
 at this moment. Therefore the user should uncompress the file, for instance with "gunzip -d" prior
 running an anlysis.
 
+## Supported RINEX
+
+* Observation Data (OBS)
+* Compressed Observation Data (CRINEX)
+* Navigation Data (NAV)
+* Meteo Data (MET)
+
+## Supported Revisions
+
+* 1.00 ⩽ v < 4.0    Tested 
+*             v = 4.0    refer to file type specific pages
+
 ## Getting started
 
 Run with `cargo`

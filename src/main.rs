@@ -198,9 +198,9 @@ for fp in &filepaths {
             .as_obs()
             .unwrap()
             .iter()
-            .map(|(epoch, (_, sv))| {
-                sv.iter()
-                    .map(|(_, obs)| {
+            .map(|(epoch, (_, data))| {
+                data.iter()
+                    .map(|(sv, obs)| {
                         obs.iter()
                             .find(|(code, data)| {
                                 let mut ok = false;
@@ -218,6 +218,7 @@ for fp in &filepaths {
                                 }
                                 ok
                             })
+                            .map(|(code,data)| (sv, code, data))
                     })
                     .flatten()
             })

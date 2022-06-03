@@ -8,6 +8,11 @@ args:
         required: true
         takes_value: true
         help: Comma separated RINEX files
+    - output:
+        long: output
+        required: false
+        takes_value: true
+        help: Comma separated output files, when producing data (special operations like split())
     - header:
         short: h
         long: header
@@ -17,7 +22,7 @@ args:
         short: d
         long: decim
         takes_value: true
-        help: Decimate data record by this factor
+        help: Decimate data record by this factor. For example, --decim 2 for epochs a,b,c,d,e,f retains a,c,e 
     - resample:
         short: r
         long: resample
@@ -61,7 +66,7 @@ args:
     - distance:
         long: distance 
         takes_value: true
-        help: Converts (all encountered) pseudo range measurement to physical distance. User must pass receiver clock offset for this calculation (refer to doc)
+        help: Converts (all encountered) pseudo range measurements to physical distance. User must pass receiver clock offset for this calculation (refer to doc)
     - events:
         long: events
         takes_value: false 
@@ -86,8 +91,4 @@ args:
         help: Retain only desired epoch interval from given file
     - pretty:
         long: pretty
-        help: Add "pretty" formatter (mostly for json formatter
-    - output:
-        long: output
-        takes_value: true
-        help: Comma separated output file(s) to use when generating new files (Merge, Split ops)
+        help: Make JSON structures more readable

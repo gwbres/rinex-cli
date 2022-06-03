@@ -66,6 +66,8 @@ pub fn main () {
     };
     
     let splice = matches.is_present("splice");
+
+    let spec_ops = merge | split | splice;
     
     // `Epoch`
     let epoch_display = matches.is_present("epoch");
@@ -383,8 +385,16 @@ for fp in &filepaths {
     }
         
     if split {
-        if let Ok(r) = rinex.split(split_epoch) {
-            println!("{:#?}", r);
+        match rinex.split(split_epoch) {
+            Ok(files) => {
+                println!("{}", files.len());
+                for f in files {
+                    if f.to_file("split.txt").is_err() {
+                        println!("Failed to write Split record to \"split.txt\"")
+                    }
+                }
+            },
+            Err(e) => println!("Split() ops failed with {:?}", e),
         }
     }
 
@@ -392,95 +402,94 @@ for fp in &filepaths {
        println!("splice is WIP"); 
     }
     
-    if header && !merge {
-        if pretty {
-            println!("{}", serde_json::to_string_pretty(&rinex.header).unwrap())
-        } else {
-            println!("{}", serde_json::to_string_pretty(&rinex.header).unwrap())
+    if !spec_ops {
+        if header {
+            if pretty {
+                println!("{}", serde_json::to_string_pretty(&rinex.header).unwrap())
+            } else {
+                println!("{}", serde_json::to_string_pretty(&rinex.header).unwrap())
+            }
         }
-    }
-    
-    if epoch_display && !merge {
-        let e : Vec<_> = match rinex.header.rinex_type {
-            Type::ObservationData => rinex.record.as_obs().unwrap().keys().collect(),
-            Type::NavigationData => rinex.record.as_nav().unwrap().keys().collect(),
-            Type::MeteoData => rinex.record.as_meteo().unwrap().keys().collect(),
-        };
-        if pretty {
-            println!("{}", serde_json::to_string_pretty(&e).unwrap())
-        } else {
-            println!("{}", serde_json::to_string(&e).unwrap())
+        if epoch_display {
+            let e : Vec<_> = match rinex.header.rinex_type {
+                Type::ObservationData => rinex.record.as_obs().unwrap().keys().collect(),
+                Type::NavigationData => rinex.record.as_nav().unwrap().keys().collect(),
+                Type::MeteoData => rinex.record.as_meteo().unwrap().keys().collect(),
+            };
+            if pretty {
+                println!("{}", serde_json::to_string_pretty(&e).unwrap())
+            } else {
+                println!("{}", serde_json::to_string(&e).unwrap())
+            }
         }
-    }
-
-    if obscode_display && !merge {
-        match rinex.header.rinex_type {
-            Type::ObservationData => {
-                let codes = rinex.header.obs_codes.unwrap();
-                if pretty {
-                    println!("{}", serde_json::to_string_pretty(&codes).unwrap())
-                } else {
-                    println!("{}", serde_json::to_string(&codes).unwrap())
-                }
-            },
-            Type::MeteoData => {
-                let codes = rinex.header.met_codes.unwrap();    
-                if pretty {
-                    println!("{}", serde_json::to_string_pretty(&codes).unwrap())
-                } else {
-                    println!("{}", serde_json::to_string(&codes).unwrap())
-                }
-            },
-            Type::NavigationData => { // (NAV) special procedure
-                let r = rinex.record.as_nav().unwrap();
-                let mut map : HashMap<String, Vec<String>> = HashMap::new();
-                for (_, sv) in r.iter() {
-                    let mut codes : Vec<String> = Vec::new();
-                    for (sv, data) in sv {
-                        let codes : Vec<String> = data
-                            .keys()
-                            .map(|k| k.to_string())
-                            .collect();
-                        map.insert(
-                            sv.constellation.to_3_letter_code().to_string(), 
-                            codes);
+        if obscode_display {
+            match rinex.header.rinex_type {
+                Type::ObservationData => {
+                    let codes = rinex.header.obs_codes.unwrap();
+                    if pretty {
+                        println!("{}", serde_json::to_string_pretty(&codes).unwrap())
+                    } else {
+                        println!("{}", serde_json::to_string(&codes).unwrap())
                     }
-                }
-                if pretty {
-                    println!("{}", serde_json::to_string_pretty(&map).unwrap())
-                } else {
-                    println!("{}", serde_json::to_string(&map).unwrap())
-                }
-            },
-        };
-    }
-
-    if !epoch_display && !obscode_display && !header && !merge {
-        match rinex.header.rinex_type {
-            Type::ObservationData => {
-                let r = rinex.record.as_obs().unwrap();
-                if pretty {
-                    println!("{}", serde_json::to_string_pretty(r).unwrap())
-                } else {
-                    println!("{}", serde_json::to_string(r).unwrap())
-                }
-            },
-            Type::NavigationData => {
-                let r = rinex.record.as_nav().unwrap();
-                if pretty {
-                    println!("{}", serde_json::to_string_pretty(r).unwrap())
-                } else {
-                    println!("{}", serde_json::to_string(r).unwrap())
-                }
-            },
-            Type::MeteoData => {
-                let r = rinex.record.as_meteo().unwrap();
-                if pretty {
-                    println!("{}", serde_json::to_string_pretty(r).unwrap())
-                } else {
-                    println!("{}", serde_json::to_string(r).unwrap())
-                }
-            },
+                },
+                Type::MeteoData => {
+                    let codes = rinex.header.met_codes.unwrap();    
+                    if pretty {
+                        println!("{}", serde_json::to_string_pretty(&codes).unwrap())
+                    } else {
+                        println!("{}", serde_json::to_string(&codes).unwrap())
+                    }
+                },
+                Type::NavigationData => { // (NAV) special procedure
+                    let r = rinex.record.as_nav().unwrap();
+                    let mut map : HashMap<String, Vec<String>> = HashMap::new();
+                    for (_, sv) in r.iter() {
+                        let mut codes : Vec<String> = Vec::new();
+                        for (sv, data) in sv {
+                            let codes : Vec<String> = data
+                                .keys()
+                                .map(|k| k.to_string())
+                                .collect();
+                            map.insert(
+                                sv.constellation.to_3_letter_code().to_string(), 
+                                codes);
+                        }
+                    }
+                    if pretty {
+                        println!("{}", serde_json::to_string_pretty(&map).unwrap())
+                    } else {
+                        println!("{}", serde_json::to_string(&map).unwrap())
+                    }
+                },
+            };
+        }
+        if !epoch_display && !obscode_display && !header { 
+            match rinex.header.rinex_type {
+                Type::ObservationData => {
+                    let r = rinex.record.as_obs().unwrap();
+                    if pretty {
+                        println!("{}", serde_json::to_string_pretty(r).unwrap())
+                    } else {
+                        println!("{}", serde_json::to_string(r).unwrap())
+                    }
+                },
+                Type::NavigationData => {
+                    let r = rinex.record.as_nav().unwrap();
+                    if pretty {
+                        println!("{}", serde_json::to_string_pretty(r).unwrap())
+                    } else {
+                        println!("{}", serde_json::to_string(r).unwrap())
+                    }
+                },
+                Type::MeteoData => {
+                    let r = rinex.record.as_meteo().unwrap();
+                    if pretty {
+                        println!("{}", serde_json::to_string_pretty(r).unwrap())
+                    } else {
+                        println!("{}", serde_json::to_string(r).unwrap())
+                    }
+                },
+            }
         }
     }
 }// for all files
@@ -492,49 +501,40 @@ for fp in &filepaths {
         }
     }
 
-    if header && merge {
-        if pretty {
-            println!("{}", serde_json::to_string_pretty(&merged.header).unwrap())
-        } else {
-            println!("{}", serde_json::to_string(&merged.header).unwrap())
-        }
-    }
-
-    if obscode_display && merge {
-        let obs = merged.header.obs_codes
-            .as_ref()
-            .unwrap();
-        if pretty {
-            println!("{}", serde_json::to_string_pretty(&obs).unwrap())
-        } else {
-            println!("{}", serde_json::to_string(&obs).unwrap())
-        }
-    }
-
-    if epoch_display && merge {
-        let e : Vec<_> = match merged.header.rinex_type {
-            Type::ObservationData => merged.record.as_obs().unwrap().keys().collect(),
-            Type::NavigationData => merged.record.as_nav().unwrap().keys().collect(),
-            Type::MeteoData => merged.record.as_meteo().unwrap().keys().collect(),
-        };
-        if pretty {
-            println!("{}", serde_json::to_string_pretty(&e).unwrap())
-        } else {
-            println!("{}", serde_json::to_string(&e).unwrap())
-        }
-    }
-
-    /*if !epoch_display && !obscode_display && merge {
-        match merged.header.rinex_type {
-            Type::ObservationData => println!("OBS RECORD \n{:#?}", merged.record.as_obs().unwrap()),
-            Type::NavigationData => println!("NAV RECORD \n{:#?}", merged.record.as_nav().unwrap()),
-            Type::MeteoData => println!("METEO RECORD \n{:#?}", merged.record.as_meteo().unwrap()),
-        }
-    }*/
-
     if merge {
-        if merged.to_file("merged.txt").is_err() {
-            println!("Failed to write MERGED RINEX to \"merged.txt\"")
+        if header {
+            if pretty {
+                println!("{}", serde_json::to_string_pretty(&merged.header).unwrap())
+            } else {
+                println!("{}", serde_json::to_string(&merged.header).unwrap())
+            }
+        }
+        if obscode_display {
+            let obs = merged.header.obs_codes
+                .as_ref()
+                .unwrap();
+            if pretty {
+                println!("{}", serde_json::to_string_pretty(&obs).unwrap())
+            } else {
+                println!("{}", serde_json::to_string(&obs).unwrap())
+            }
+        }
+        if epoch_display {
+            let e : Vec<_> = match merged.header.rinex_type {
+                Type::ObservationData => merged.record.as_obs().unwrap().keys().collect(),
+                Type::NavigationData => merged.record.as_nav().unwrap().keys().collect(),
+                Type::MeteoData => merged.record.as_meteo().unwrap().keys().collect(),
+            };
+            if pretty {
+                println!("{}", serde_json::to_string_pretty(&e).unwrap())
+            } else {
+                println!("{}", serde_json::to_string(&e).unwrap())
+            }
+        }
+        if merge {
+            if merged.to_file("merged.txt").is_err() {
+                println!("Failed to write MERGED RINEX to \"merged.txt\"")
+            }
         }
     }
 

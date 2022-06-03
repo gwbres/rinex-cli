@@ -16,7 +16,7 @@ and allows easy RINEX files manipulation.
 Why this tool ?
 
 RINEX files are very common, they are used in 
-* GNSS applications :artificial_satellite:, 
+* GNSS applications :artificial_satellite:
 * Timing applications :clock1: :satellite: 
 * Astronomy :satellite:
 * Navigation applications :rocket: :earth_americas:

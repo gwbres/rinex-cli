@@ -74,14 +74,14 @@ here is an example on how to use a shortenned argument:
 
 ```bash
 cargo run --filepath /tmp/amel010.21g
-cargo run -fp /tmp/amel010.21g
+cargo run -f /tmp/amel010.21g
 ```
 
 Some arguments, like `filepath` or `obscodes` can take an array of values.
 In this case, we use comma separated enumeration like this:
 
 ```bash
-cargo run -fp /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
+cargo run -f /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 ```
 
 ## Output format
@@ -108,8 +108,8 @@ epoch events or sampling events specifically.
 Example :
 
 ```bash
-cargo run -- -fp /tmp/data.obs --epoch --pretty
-cargo run -- -fp /tmp/data.obs -e > /tmp/epochs.json
+cargo run -- -f /tmp/data.obs --epoch --pretty
+cargo run -- -f /tmp/data.obs -e > /tmp/epochs.json
 ```
 
 ## OBS / DATA code identification
@@ -122,8 +122,8 @@ understand which data (physics) is present and we can build
 efficient data filter from that information
 
 ```bash
-cargo run -- -fp /tmp/data.obs --obscodes --pretty
-cargo run -- -fp /tmp/data.obs -o > /tmp/data-codes.json
+cargo run -- -f /tmp/data.obs --obscodes --pretty
+cargo run -- -f /tmp/data.obs -o > /tmp/data-codes.json
 ```
 
 This flag name can be misleading as it is possible to use this
@@ -151,9 +151,9 @@ This can be a quick way to reduce the amount of data
 Example :
 
 ```bash
-cargo run -- -fp /tmp/data.obs -c C1C,C2C # huge set
-cargo run -- -fp /tmp/data.obs --epoch-ok -c C1C,C2C # reduce set 
-cargo run -- -fp /tmp/data.obs --epoch-nok -c C1C,C2C # focus on weird events 
+cargo run -- -f /tmp/data.obs -c C1C,C2C # huge set
+cargo run -- -f /tmp/data.obs --epoch-ok -c C1C,C2C # reduce set 
+cargo run -- -f /tmp/data.obs --epoch-nok -c C1C,C2C # focus on weird events 
 ```
 
 ## Satellite vehicule filter
@@ -183,7 +183,7 @@ It is possible to filter data that have a matching LLI flag,
 for instance 0x01 means Loss of Lock at given epoch:
 
 ```shell
-cargo run -- -fp /tmp/data.obs --lli 1 --sv R01 > output.txt
+cargo run -- -f /tmp/data.obs --lli 1 --sv R01 > output.txt
 ```
 
 ## SSI: signal "quality" filter
@@ -196,7 +196,7 @@ For example, with this value, we only retain data with SSI >= 5
 that means at least 30 dB SNR 
 
 ```shell
-cargo run -- -fp /tmp/data.obs --ssi 1 --sv R01 > output.txt
+cargo run -- -f /tmp/data.obs --ssi 1 --sv R01 > output.txt
 ```
 
 ## Data filter
@@ -213,7 +213,7 @@ refer to the known
 Example:
 
 ```bash
-cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx -c L1C,S1P 
+cargo run -f CBW100NLD_R_20210010000_01D_MN.rnx -c L1C,S1P 
 ```
 
 ## Cummulated filters
@@ -222,7 +222,7 @@ Because all arguments can be cummulated, one can
 create efficient data filter and focus on data of interest: 
 
 ```bash
-cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx \
+cargo run -f CBW100NLD_R_20210010000_01D_MN.rnx \
     --lli 0 # "OK" \
         --ssi 5 # not bad \
             -c C1C,C2C,C1X # PR measurements only :) \
@@ -246,5 +246,5 @@ When merging, if analysis are to be performed, they will be performed on the res
 For example:
 
 ```bash
-cargo run -fp file1.rnx,/tmp/file2.rnx
+cargo run -f file1.rnx,/tmp/file2.rnx
 ```

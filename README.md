@@ -86,15 +86,15 @@ cargo run -fp /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 
 ## Output format
 
-This tool prints everything in the terminal (`stdout`).
+This tool display everything in the terminal (`stdout`).
 One should pipe the output data to a file in order to store it.
 
-By default, this tool expose data has JSON structure.
-This makes the result directly readable / loadable into other
-tool or scripts for computations.
+This tool uses JSON format to expose data, which makes it easy
+to import into external tool for further calculations and processing,
+like python scripts for instance.
 
-One can add the `--pretty` option to have the json structure.
-
+At any moment, add the `--pretty` option to make this more readable if desired.
+Output is still valid JSON.
 
 ## Epoch identification 
 

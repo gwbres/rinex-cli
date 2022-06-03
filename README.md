@@ -282,8 +282,8 @@ Two description format are supported, for the user to describe a sampling
 timestamp:
 
 * "YYYY-MM-DD HH:MM:SS" : Datetime description and EpochFlag::Ok is assumed
-* "YYYY-MM-DD HH:MM:SS 0" : Datetime description with EpochFlag::Ok description
-* "YYYY-MM-DD HH:MM:SS 1" : Datetime description with EpochFlag::PowerFailure description
+* "YYYY-MM-DD HH:MM:SS X" : Datetime description where X describes the EpochFlag integer value.
+Refer to RINEX standards for supported Epoch flag values 
 
 The tool identifies matching timestamp by comparing the datetime field AND
 the flag field. They both must match.

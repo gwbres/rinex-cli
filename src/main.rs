@@ -23,6 +23,7 @@ pub fn main () {
 	let matches = app.get_matches();
 
     // General 
+    let pretty = matches.is_present("pretty");
     let filepaths : Vec<&str> = matches.value_of("filepath")
         .unwrap()
             .split(",")
@@ -36,9 +37,6 @@ pub fn main () {
         },
         false => None,
     };
-
-    let json = matches.is_present("json");
-    let pretty = matches.is_present("pretty");
 
     // RINEX 
     let header = matches.is_present("header");
@@ -400,11 +398,11 @@ for fp in &filepaths {
     }
     
     if header && !merge {
-        if json {
-        } else { // raw
-            println!("*******************************");
-            println!("HEADER in \"{}\"\n{:#?}", fp, rinex.header);
-            println!("*******************************");
+        if pretty {
+            println!("{}", serde_json::to_string_pretty(&rinex.header).unwrap())
+        } else {
+
+            println!("{}", serde_json::to_string_pretty(&rinex.header).unwrap())
         }
     }
     
@@ -422,21 +420,73 @@ for fp in &filepaths {
     }
 
     if obscode_display && !merge {
-        let obs = rinex.header.obs_codes
-            .unwrap();
-
-        if pretty {
-            println!("{}", serde_json::to_string_pretty(&obs).unwrap())
-        } else {
-            println!("{}", serde_json::to_string(&obs).unwrap())
-        }
+        match rinex.header.rinex_type {
+            Type::ObservationData => {
+                let codes = rinex.header.obs_codes.unwrap();
+                if pretty {
+                    println!("{}", serde_json::to_string_pretty(&codes).unwrap())
+                } else {
+                    println!("{}", serde_json::to_string(&codes).unwrap())
+                }
+            },
+            Type::MeteoData => {
+                let codes = rinex.header.met_codes.unwrap();    
+                if pretty {
+                    println!("{}", serde_json::to_string_pretty(&codes).unwrap())
+                } else {
+                    println!("{}", serde_json::to_string(&codes).unwrap())
+                }
+            },
+            Type::NavigationData => { // (NAV) special procedure
+                let r = rinex.record.as_nav().unwrap();
+                let mut map : HashMap<String, Vec<String>> = HashMap::new();
+                for (_, sv) in r.iter() {
+                    let mut codes : Vec<String> = Vec::new();
+                    for (sv, data) in sv {
+                        let codes : Vec<String> = data
+                            .keys()
+                            .map(|k| k.to_string())
+                            .collect();
+                        map.insert(
+                            sv.constellation.to_3_letter_code().to_string(), 
+                            codes);
+                    }
+                }
+                if pretty {
+                    println!("{}", serde_json::to_string_pretty(&map).unwrap())
+                } else {
+                    println!("{}", serde_json::to_string(&map).unwrap())
+                }
+            },
+        };
     }
 
     if !epoch_display && !obscode_display && !header && !merge {
         match rinex.header.rinex_type {
-            Type::ObservationData => println!("OBS RECORD \n{:#?}", rinex.record.as_obs().unwrap()),
-            Type::NavigationData => println!("NAV RECORD \n{:#?}", rinex.record.as_nav().unwrap()),
-            Type::MeteoData => println!("METEO RECORD \n{:#?}", rinex.record.as_meteo().unwrap()),
+            Type::ObservationData => {
+                let r = rinex.record.as_obs().unwrap();
+                if pretty {
+                    println!("{}", serde_json::to_string_pretty(r).unwrap())
+                } else {
+                    println!("{}", serde_json::to_string(r).unwrap())
+                }
+            },
+            Type::NavigationData => {
+                let r = rinex.record.as_nav().unwrap();
+                if pretty {
+                    println!("{}", serde_json::to_string_pretty(r).unwrap())
+                } else {
+                    println!("{}", serde_json::to_string(r).unwrap())
+                }
+            },
+            Type::MeteoData => {
+                let r = rinex.record.as_meteo().unwrap();
+                if pretty {
+                    println!("{}", serde_json::to_string_pretty(r).unwrap())
+                } else {
+                    println!("{}", serde_json::to_string(r).unwrap())
+                }
+            },
         }
     }
 }// for all files

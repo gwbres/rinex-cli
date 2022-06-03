@@ -465,30 +465,27 @@ for fp in &filepaths {
         match rinex.header.rinex_type {
             Type::ObservationData => {
                 let r = rinex.record.as_obs().unwrap();
-                println!("{:#?}", r)
-                /*if pretty {
+                if pretty {
                     println!("{}", serde_json::to_string_pretty(r).unwrap())
                 } else {
                     println!("{}", serde_json::to_string(r).unwrap())
-                }*/
+                }
             },
             Type::NavigationData => {
                 let r = rinex.record.as_nav().unwrap();
-                println!("{:#?}", r)
-                /*if pretty {
+                if pretty {
                     println!("{}", serde_json::to_string_pretty(r).unwrap())
                 } else {
                     println!("{}", serde_json::to_string(r).unwrap())
-                }*/
+                }
             },
             Type::MeteoData => {
                 let r = rinex.record.as_meteo().unwrap();
-                println!("{:#?}", r)
-                /*if pretty {
+                if pretty {
                     println!("{}", serde_json::to_string_pretty(r).unwrap())
                 } else {
                     println!("{}", serde_json::to_string(r).unwrap())
-                }*/
+                }
             },
         }
     }

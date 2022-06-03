@@ -29,28 +29,35 @@ without compromising ease of use.
 
 Read this section before getting started
 
-## Compressed Data
-
-RINEX files are huge and so, are most of the time compressed.
-
-It is possible for this tool to analyze a Hatanaka compressed RINEX (also called CRINEX) file directly.
-That means, you don't have to run extra tools like `CRX2RNX` before running an analysis.
-
-It is not possible to analyze a .gz or other compression method stacked on top of a CRINEX
-at this moment. Therefore the user should uncompress the file, for instance with "gunzip -d" prior
-running an anlysis.
-
-## Supported RINEX
+### Supported RINEX
 
 * Observation Data (OBS)
 * Compressed Observation Data (CRINEX)
 * Navigation Data (NAV)
 * Meteo Data (MET)
 
-## Supported Revisions
+### File naming conventions
 
-* 1.00 ⩽ v < 4.0    Tested 
-*             v = 4.0    refer to file type specific pages
+File names are disregarded by these tools, you can analyze
+& parse files that do not follow naming conventions.
+
+### Compressed files
+
+RINEX files are most of the time compressed.
+
+This tool support CRINEX (compressed RINEX) natively. You can
+pass a CRINEX and parse it directly.
+
+This tool does not support extra compression (like .gz for instance).
+It is up to the user to decompress these files prior analysis.
+
+### RINEX Revisions
+
+Many RINEX revisions exist
+
+* Supported RINEX are tested for 1.00 ⩽ v < 4.0    
+* v = 4.0 and newer should work but is either
+not fully tested, not garanteed or restrictions may apply.
 
 ## Getting started
 

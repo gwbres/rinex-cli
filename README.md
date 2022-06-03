@@ -84,75 +84,99 @@ In this case, we use comma separated enumeration like this:
 cargo run -fp /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 ```
 
-This tool currently has 4 modes of operation:
+## Output format
 
-* (1) -e will print encountered epochs (sampling timestamps) to stdout.
-The user can pipe stdout to a file to save this data.
+This tool prints everything in the terminal (`stdout`).
+One should pipe the output data to a file in order to store it.
 
-* (2) -o will print encountered OBS codes to stdout. 
-The user can pipe stdout to a file to save this data.
-If we're dealing with NAV file(s), we actually print the data identification codes
+By default, this tool expose data has JSON structure.
+This makes the result directly readable / loadable into other
+tool or scripts for computations.
 
-* (1+2) -e and -o can be combined and used at the same time
+One can add the `--pretty` option to have the json structure.
 
-* (3) when -e and -o are not passed, this tool will 
-print the extracted / filtered data to stdout once again.
-To learn how to filter data efficiently, refer to the following examples 
 
-* (4) when -m or --merge is passed, a `merging` operation is to be performed.
-It is possible to perform -e (1), -o (2) (1+2) or or any (3) analysis on the resulting merged RINEX file.
-When merging, we aim at creating a new valid RINEX file. 
-In this special case, an output file is created. 
+## Epoch identification 
+
+`--epoch` or `-e`
+is used to export the identified epochs (sampling timestamps)
+in the given RINEX records.
+When we extract data, we always associate it to a sampling timestamp.
+Therefore, this flag should only be used if the user studies
+epoch events or sampling events specifically.
 
 Example :
 
-```shell
-# Print encountered timestamps 
-cargo run -- --fp /tmp/data.obs -e
-# Print encountered timestamps + OBS codes 
-cargo run -- --fp /tmp/data.obs -o -e
-# Dump into a file 
-cargo run -- --fp /tmp/data.obs -o > infos.txt
-
-# nominal use: record is printed (without filtering)
-cargo run -- --fp /tmp/data.obs > data.txt
-
-# nominal use: record is printed (with some filters)
-cargo run -- --fp /tmp/data.obs \
-    -sv G01,E6,R24,R3 -c C1C,C1X > data.txt
-
-# special opmode
-cargo run -- --fp /tmp/data1.obs,/tmp/data2.obs 
+```bash
+cargo run -- -fp /tmp/data.obs --epoch --pretty
+cargo run -- -fp /tmp/data.obs -e > /tmp/epochs.json
 ```
 
-### Epoch filter
+## OBS / DATA code identification
 
-* --epoch-ok : will retain only valid epoch, ie.,
-epochs that have an Epoch::Flag::Ok attached to them
+`--obscodes` or `-o`
+is used to identify which data codes (not necesarily OBS..) 
+are present in the given records.
+This macro is very useful because it lets the user
+understand which data (physics) is present and we can build
+efficient data filter from that information
 
-* --epoch-nok : will retain only non valid epoch, ie.,
-epochs that have an !Epoch::Flag::Ok attached to them
+```bash
+cargo run -- -fp /tmp/data.obs --obscodes --pretty
+cargo run -- -fp /tmp/data.obs -o > /tmp/data-codes.json
+```
 
-Epoch filter only makes sense on OBS data (meteo or obs).
+This flag name can be misleading as it is possible to use this
+flag to identify NAV data field also !
 
-### Satellite vehicule filter
+## Record resampling
 
-* --sv with a comma separated list of satellite vehicule to retain
+Record resampling is work in progress !
+
+## Epoch filter
+
+Some RINEX files like Observation Data 
+associate an epoch flag to each epoch.  
+A non `Ok` epoch flag describes a special event
+or external pertubations that happened at that sampling
+date. We provide the following arguments to
+easily discard unusual events or focus on them to
+figure things out:
+
+* --epoch-ok : will retain only valid epochs (EpochFlag::Ok).
+This can be a quick way to reduce the amount of data
+
+* --epoch-nok : will retain only non valid epoch (!EpochFlag::Ok). 
+
+Example :
+
+```bash
+cargo run -- -fp /tmp/data.obs -c C1C,C2C # huge set
+cargo run -- -fp /tmp/data.obs --epoch-ok -c C1C,C2C # reduce set 
+cargo run -- -fp /tmp/data.obs --epoch-nok -c C1C,C2C # focus on weird events 
+```
+
+## Satellite vehicule filter
+
+`--sv` is one way to focus on specific Satellite Vehicule or constellation of interest.
+Use comma separated description!
 
 Example:
 
 ```shell
-cargo run -- --filepath /tmp/data.obs --epoch-ok --sv G01,G2,E06,E24,R24 > data.txt
+cargo run -- --filepath /tmp/data.obs --epoch-ok \
+    --sv G01,G2,E06,E24,R24
 ```
 
-Will only retain data from GPS 1+2, GAL 6+24 and GLO 24 vehicules.
+Will only retain (all) data that has a EpochFlag::Ok 
+from GPS 1+2, GAL 6+24 and GLO 24 vehicules.
 
+## Constellation filter
 
-### Constellation filter
+Constellation filter is not feasible at the moment.
+User can only use `sv` filter to do that at the moment.
 
-Constellation filter is not feasible at the moment
-
-### LLI : RX condition filter
+## LLI : RX condition filter
 
 Observation data might have LLI flags attached to them.  
 It is possible to filter data that have a matching LLI flag,
@@ -162,7 +186,7 @@ for instance 0x01 means Loss of Lock at given epoch:
 cargo run -- -fp /tmp/data.obs --lli 1 --sv R01 > output.txt
 ```
 
-### SSI: signal "quality" filter
+## SSI: signal "quality" filter
 
 Observation data might have an SSI indication attached to them.
 It is possible to filter data according to this value and
@@ -175,7 +199,7 @@ that means at least 30 dB SNR
 cargo run -- -fp /tmp/data.obs --ssi 1 --sv R01 > output.txt
 ```
 
-### Data filter
+## Data filter
 
 We use the -c or --code argument to filter data out
 and only retain data of interest.
@@ -189,22 +213,29 @@ refer to the known
 Example:
 
 ```bash
-# Retain Carrier phase + Carrier power 
 cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx -c L1C,S1P 
 ```
 
-### Cummulated filter
+## Cummulated filters
 
-All arguments can be cummulated,
-for example:
+Because all arguments can be cummulated, one can 
+create efficient data filter and focus on data of interest: 
 
 ```bash
 cargo run -fp CBW100NLD_R_20210010000_01D_MN.rnx \
     --lli 0 # "OK" \
         --ssi 5 # not bad \
-            -c C1C,C2C,C1X # PR measurements \
-                --sv G01,E06,G24,E24 # focus
+            -c C1C,C2C,C1X # PR measurements only :) \
+                --sv G01,G2,G24,G25 # GPS focus !
 ```
+
+## `teqc` operations
+
+This tool supports special operations that only
+`teqc` supports at the moment. Therefore
+it can be an efficient alternative to this program.
+
+All of the special operations actually create an output file.
 
 ## `Merge` special operation
 
@@ -214,12 +245,6 @@ When merging, if analysis are to be performed, they will be performed on the res
 
 For example:
 
-```shell
-# (1)
-cargo run -fp /tmp/file1.obs,/tmp/file2.obs -o -e > infos.txt
-# is identical to (2)
-cargo run -fp /tmp/file1.obs,/tmp/file2.obs -m -o -e > infos.txt
+```bash
+cargo run -fp file1.rnx,/tmp/file2.rnx
 ```
-
-In (1) we perform -o and -e obscodes and timestamps extraction.   
-In (2) similar operation is performed but after merging both files.

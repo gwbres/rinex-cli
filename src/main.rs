@@ -387,11 +387,12 @@ for fp in &filepaths {
     if split {
         match rinex.split(split_epoch) {
             Ok(files) => {
-                println!("{}", files.len());
+                let mut offset = 1;
                 for f in files {
-                    if f.to_file("split.txt").is_err() {
+                    if f.to_file(&format!("split-{}.txt", offset)).is_err() {
                         println!("Failed to write Split record to \"split.txt\"")
                     }
+                    offset += 1
                 }
             },
             Err(e) => println!("Split() ops failed with {:?}", e),

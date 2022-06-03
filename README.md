@@ -19,7 +19,8 @@ RINEX files are very common, they are used in
 * GNSS applications :artificial_satellite:
 * Timing applications :clock1:
 * Astronomy :satellite:
-* Space :rocket: and Navigation applications :earth_americas:
+* Space applications :rocket: 
+* Navigation applications :earth_americas:
 
 RINEX files are complex, several kinds exist and they differ a lot from one another.  
 This tool is powerful enough to manage almost all revisions and most common RINEX files,

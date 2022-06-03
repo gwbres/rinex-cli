@@ -22,7 +22,25 @@ pub fn main () {
     let app = App::from_yaml(yaml);
 	let matches = app.get_matches();
 
-    // General
+    // General 
+    let filepaths : Vec<&str> = matches.value_of("filepath")
+        .unwrap()
+            .split(",")
+            .collect();
+    let output : Option<Vec<&str>> = match matches.is_present("output") {
+        true => {
+            Some(matches.value_of("output")
+                .unwrap()
+                    .split(",")
+                    .collect())
+        },
+        false => None,
+    };
+
+    let json = matches.is_present("json");
+    let pretty = matches.is_present("pretty");
+
+    // RINEX 
     let header = matches.is_present("header");
     let resampling = matches.is_present("resampling");
     let decimate = matches.is_present("decimate");
@@ -32,7 +50,7 @@ pub fn main () {
     let split_epoch : Option<epoch::Epoch> = match matches.value_of("split") {
         Some(date) => {
             let offset = 4 +2+1 +2+1 +2+1 +2+1 +2+1; // YYYY-mm-dd-HH:MM:SS 
-            let datetime = date[0..offset];
+            let datetime = date[0..offset].to_string();
             let flag : Option<epoch::EpochFlag> = match date.len() > offset {
                 true => {
                     None
@@ -42,7 +60,7 @@ pub fn main () {
                 },
             };
             Some(epoch::Epoch {
-                date : chrono::naivedatetime::from_str(datetime, "YYYY-mm-dd:HH:MM:SS")
+                date : chrono::NaiveDateTime::parse_from_str(&datetime, "%Y-%m-%d:%M:%M:%S")
                     .unwrap(), 
                 flag : flag.unwrap_or(epoch::EpochFlag::Ok),
             })
@@ -89,12 +107,6 @@ pub fn main () {
         _ => None,
     };
 
-    // file paths 
-    let filepaths : Vec<&str> = matches.value_of("filepath")
-        .unwrap()
-            .split(",")
-            .collect();
-
     let mut index : usize = 0;
     let mut merged: Rinex = Rinex::default();
     let mut to_merge : Vec<Rinex> = Vec::new(); 
@@ -104,7 +116,6 @@ for fp in &filepaths {
     let mut rinex = match path.exists() {
         true => {
             if let Ok(r) = Rinex::from_file(fp) {
-                println!("Parsed {:?} RINEX \"{}\"", r.header.rinex_type, fp); 
                 r
             } else {
                 println!("Failed to parse file \"{}\"", fp); 
@@ -389,9 +400,12 @@ for fp in &filepaths {
     }
     
     if header && !merge {
-        println!("*******************************");
-        println!("HEADER in \"{}\"\n{:#?}", fp, rinex.header);
-        println!("*******************************");
+        if json {
+        } else { // raw
+            println!("*******************************");
+            println!("HEADER in \"{}\"\n{:#?}", fp, rinex.header);
+            println!("*******************************");
+        }
     }
     
     if epoch_display && !merge {
@@ -400,17 +414,22 @@ for fp in &filepaths {
             Type::NavigationData => rinex.record.as_nav().unwrap().keys().collect(),
             Type::MeteoData => rinex.record.as_meteo().unwrap().keys().collect(),
         };
-        println!("*******************************");
-        println!("Epochs in \"{}\"\n{:#?}", fp, e);
-        println!("*******************************");
+        if pretty {
+            println!("{}", serde_json::to_string_pretty(&e).unwrap())
+        } else {
+            println!("{}", serde_json::to_string(&e).unwrap())
+        }
     }
 
     if obscode_display && !merge {
         let obs = rinex.header.obs_codes
             .unwrap();
-        println!("*******************************");
-        println!("OBS in \"{}\"\n{:#?}", fp, obs);
-        println!("*******************************");
+
+        if pretty {
+            println!("{}", serde_json::to_string_pretty(&obs).unwrap())
+        } else {
+            println!("{}", serde_json::to_string(&obs).unwrap())
+        }
     }
 
     if !epoch_display && !obscode_display && !header && !merge {
@@ -420,7 +439,6 @@ for fp in &filepaths {
             Type::MeteoData => println!("METEO RECORD \n{:#?}", rinex.record.as_meteo().unwrap()),
         }
     }
-
 }// for all files
     
     // Merge() opt
@@ -453,6 +471,7 @@ for fp in &filepaths {
         };
         println!("*******************************");
         println!("Epochs in MERGED record\n{:#?}", e);
+        println!("*******************************");
     }
 
     /*if !epoch_display && !obscode_display && merge {

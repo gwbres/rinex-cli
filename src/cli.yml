@@ -58,9 +58,10 @@ args:
         long: ssi
         takes_value: true 
         help: Retain only OBS data that have at least this SSI signal strength indication attached to them (x >= SSI is retained) 
-    - pseudorange:
-        long: pseudorange
-        help: Converts all pseudo range data to meter for convenience
+    - distance:
+        long: distance 
+        takes_value: true
+        help: Converts (all encountered) pseudo range measurement to physical distance. User must pass receiver clock offset for this calculation (refer to doc)
     - events:
         long: events
         takes_value: false 
@@ -83,3 +84,10 @@ args:
         long: splice
         takes_value: true
         help: Retain only desired epoch interval from given file
+    - pretty:
+        long: pretty
+        help: Add "pretty" formatter (mostly for json formatter
+    - output:
+        long: output
+        takes_value: true
+        help: Comma separated output file(s) to use when generating new files (Merge, Split ops)

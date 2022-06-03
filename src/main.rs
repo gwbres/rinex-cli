@@ -5,7 +5,6 @@
 use clap::App;
 use clap::load_yaml;
 use std::str::FromStr;
-use serde_json::json;
 use std::collections::HashMap;
 
 use rinex::Rinex;

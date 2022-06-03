@@ -5,6 +5,7 @@
 use clap::App;
 use clap::load_yaml;
 use std::str::FromStr;
+use serde_json::json;
 use std::collections::HashMap;
 
 use rinex::Rinex;
@@ -401,7 +402,6 @@ for fp in &filepaths {
         if pretty {
             println!("{}", serde_json::to_string_pretty(&rinex.header).unwrap())
         } else {
-
             println!("{}", serde_json::to_string_pretty(&rinex.header).unwrap())
         }
     }
@@ -465,27 +465,30 @@ for fp in &filepaths {
         match rinex.header.rinex_type {
             Type::ObservationData => {
                 let r = rinex.record.as_obs().unwrap();
-                if pretty {
+                println!("{:#?}", r)
+                /*if pretty {
                     println!("{}", serde_json::to_string_pretty(r).unwrap())
                 } else {
                     println!("{}", serde_json::to_string(r).unwrap())
-                }
+                }*/
             },
             Type::NavigationData => {
                 let r = rinex.record.as_nav().unwrap();
-                if pretty {
+                println!("{:#?}", r)
+                /*if pretty {
                     println!("{}", serde_json::to_string_pretty(r).unwrap())
                 } else {
                     println!("{}", serde_json::to_string(r).unwrap())
-                }
+                }*/
             },
             Type::MeteoData => {
                 let r = rinex.record.as_meteo().unwrap();
-                if pretty {
+                println!("{:#?}", r)
+                /*if pretty {
                     println!("{}", serde_json::to_string_pretty(r).unwrap())
                 } else {
                     println!("{}", serde_json::to_string(r).unwrap())
-                }
+                }*/
             },
         }
     }
@@ -499,18 +502,22 @@ for fp in &filepaths {
     }
 
     if header && merge {
-        println!("****************************");
-        println!("MERGED RINEX\n{:#?}", merged.header);
-        println!("***************************");
+        if pretty {
+            println!("{}", serde_json::to_string_pretty(&merged.header).unwrap())
+        } else {
+            println!("{}", serde_json::to_string(&merged.header).unwrap())
+        }
     }
 
     if obscode_display && merge {
         let obs = merged.header.obs_codes
             .as_ref()
             .unwrap();
-        println!("****************************");
-        println!("OBS in MERGED record\n{:#?}", obs);
-        println!("***************************");
+        if pretty {
+            println!("{}", serde_json::to_string_pretty(&obs).unwrap())
+        } else {
+            println!("{}", serde_json::to_string(&obs).unwrap())
+        }
     }
 
     if epoch_display && merge {
@@ -519,9 +526,11 @@ for fp in &filepaths {
             Type::NavigationData => merged.record.as_nav().unwrap().keys().collect(),
             Type::MeteoData => merged.record.as_meteo().unwrap().keys().collect(),
         };
-        println!("*******************************");
-        println!("Epochs in MERGED record\n{:#?}", e);
-        println!("*******************************");
+        if pretty {
+            println!("{}", serde_json::to_string_pretty(&e).unwrap())
+        } else {
+            println!("{}", serde_json::to_string(&e).unwrap())
+        }
     }
 
     /*if !epoch_display && !obscode_display && merge {

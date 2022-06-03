@@ -42,6 +42,8 @@ pub fn main () {
     let header = matches.is_present("header");
     let resampling = matches.is_present("resampling");
     let decimate = matches.is_present("decimate");
+
+    // SPEC ops
     let merge = matches.is_present("merge");
 
     let split = matches.is_present("split");
@@ -50,22 +52,19 @@ pub fn main () {
             let offset = 4 +2+1 +2+1 +2+1 +2+1 +2+1; // YYYY-mm-dd-HH:MM:SS 
             let datetime = date[0..offset].to_string();
             let flag : Option<epoch::EpochFlag> = match date.len() > offset {
-                true => {
-                    None
-                },
-                false => {
-                    None
-                },
+                true => Some(epoch::EpochFlag::from_str(&date[offset+1..])
+                    .unwrap_or(epoch::EpochFlag::Ok)),
+                false => None,
             };
             Some(epoch::Epoch {
-                date : chrono::NaiveDateTime::parse_from_str(&datetime, "%Y-%m-%d:%M:%M:%S")
+                date : chrono::NaiveDateTime::parse_from_str(&datetime, "%Y-%m-%d %H:%M:%S")
                     .unwrap(), 
                 flag : flag.unwrap_or(epoch::EpochFlag::Ok),
             })
         },
         None => None,
     };
-    println!("SPLIT EPOCH: {:?}", split_epoch);
+    
     let splice = matches.is_present("splice");
     
     // `Epoch`
@@ -384,13 +383,9 @@ for fp in &filepaths {
     }
         
     if split {
-       println!("split is WIP"); 
-        /*let datetime = datetime::from_str("%%-%m-%d-%H:%M:%S").unwrap();
-        let e = epoch::Epoch::new(
-            datetime,
-            epoch::EpochFlag::Ok
-        );
-        let (r1, r2) = rinex.split(e);*/
+        if let Ok(r) = rinex.split(split_epoch) {
+            println!("{:#?}", r);
+        }
     }
 
     if splice {

@@ -248,3 +248,60 @@ For example:
 ```bash
 cargo run -f file1.rnx,/tmp/file2.rnx
 ```
+
+## `Split` special operation
+
+It is possible to split given RINEX files into two.
+
+`Split` has two behaviors
+
+* (1) if given RINEX is a `merged` RINEX (either by `teqc` or this tool),
+we split the record at the epoch (timestamps) where records were previously merged
+
+* (2) otherwise, the user is expected to describe a timestamp (`epoch`) 
+at which we will split the record.
+
+### Splitting a previously merged record
+
+```bash
+# Merge two RINEX toghether
+cargo run -f /tmp/file1.rnx,/tmp/file2.rnx -m --output /tmp/merged.rnx
+# Split resulting RINEX
+cargon run -f /tmp/merged.rnx --split --output /tmp/split1.rnx,/tmp/split2.rnx 
+```
+
+When splitting a merged RINEX, the header section is simply
+copied into both results.
+
+### Splitting record
+
+If User provides an `epoch`, the tool will try to locate the
+given timestamp and perform `split()` at this date & time.
+
+Two description format are supported, for the user to describe a sampling
+timestamp:
+
+* "YYYY-MM-DD HH:MM:SS" : Datetime description and EpochFlag::Ok is assumed
+* "YYYY-MM-DD HH:MM:SS 0" : Datetime description with EpochFlag::Ok description
+* "YYYY-MM-DD HH:MM:SS 1" : Datetime description with EpochFlag::PowerFailure description
+
+The tool identifies matching timestamp by comparing the datetime field AND
+the flag field. They both must match.
+
+Example :
+
+```bash
+# Split a previously merged record
+cargo run -f /tmp/merged.rnx --split \
+    --output /tmp/file1.rnx,/tmp/file2.rnx
+
+# Split a record at specified timestamp,
+# don't forget the \" encapsulation \" ;)
+cargo run -f /tmp/data.rnx --split "2022-06-03 16:00:00" \
+    --output /tmp/file1.rnx,/tmp/file2.rnx
+
+# Split a record at specified timestamp with precise Power Failure event
+# don't forget the \" encapsulation \" ;)
+cargo run -f /tmp/data.rnx --split "2022-06-03 16:00:00 1" \
+    --output /tmp/file1.rnx,/tmp/file2.rnx
+```

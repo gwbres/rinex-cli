@@ -15,13 +15,13 @@ and allows easy RINEX files manipulation.
 
 Why this tool ?
 
-RINEX are very common worldwide, they are used in 
-GNSS :artificial_satellite:, 
-timing :clock1: :satellite: 
-and navigation :rocket: :earth_americas: 
-applications.
+RINEX files are very common, they are used in 
+* GNSS applications :artificial_satellite:, 
+* Timing applications :clock1: :satellite: 
+* Astronomy :satellite:
+* Navigation applications :rocket: :earth_americas:
 
-RINEX are complex files, several kinds exist, they differ a lot from one another.  
+RINEX files are complex, several kinds exist and they differ a lot from one another.  
 This tool is powerful enough to manage almost all revisions and most common RINEX files,
 without compromising ease of use.
 

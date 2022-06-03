@@ -25,6 +25,10 @@ RINEX are complex files, several kinds exist, they differ a lot from one another
 This tool is powerful enough to manage almost all revisions and most common RINEX files,
 without compromising ease of use.
 
+## Notes on data & RINEX
+
+Read this section before getting started
+
 ## Compressed Data
 
 RINEX files are huge and so, are most of the time compressed.
@@ -50,17 +54,27 @@ running an anlysis.
 
 ## Getting started
 
-Run with `cargo`
+You can run the application with `cargo` for instance
 
 ```bash
 cargo run -- --help
 ```
 
-Filepath : -fp or --filepath, to select local RINEX files 
+Command line arguments order does not matter.  
+(Input) `filepath` is the only mandatory argument, all other are optionnal.
+`Help` menu tells you which argument has a shortenned version,
+here is an example on how to use a shortenned argument:
 
 ```bash
 cargo run --filepath /tmp/amel010.21g
-cargo run --filepath /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
+cargo run -fp /tmp/amel010.21g
+```
+
+Some arguments, like `filepath` or `obscodes` can take an array of values.
+In this case, we use comma separated enumeration like this:
+
+```bash
+cargo run -fp /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 ```
 
 This tool currently has 4 modes of operation:

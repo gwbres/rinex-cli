@@ -22,9 +22,7 @@ RINEX files are complex, several kinds exist and they differ a lot from one anot
 This tool is powerful enough to manage almost all revisions and most common RINEX files,
 without compromising ease of use.
 
-## Notes on data & RINEX
-
-Read this section before getting started
+## Notes on RINEX data
 
 ### Supported RINEX
 

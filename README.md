@@ -46,11 +46,15 @@ File names are disregarded by these tools, you can analyze
 
 RINEX files are most of the time compressed.
 
-This tool support CRINEX (compressed RINEX) natively. You can
+This tool supports CRINEX (compressed RINEX) natively. You can
 pass a CRINEX and parse it directly.
 
 This tool does not support extra compression (like .gz for instance).
 It is up to the user to decompress these files prior analysis.
+
+This tool is focused on data extraction & analysis, if you want to perform
+file operations like `RNX2CRX` (compression) and `CRX2RNX` (decompression),
+prefer [this tool](https://github.com/gwbres/hatanaka) instead.
 
 ### RINEX Revisions
 

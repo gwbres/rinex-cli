@@ -7,10 +7,6 @@ Command line tool to handle, manage and analyze RINEX files
 [![crates.io](https://img.shields.io/crates/d/rinex-cli.svg)](https://crates.io/crates/rinex-cli)    
 [![Rust](https://github.com/gwbres/rinex-cli/actions/workflows/rust.yml/badge.svg)](https://github.com/gwbres/rinex-cli/actions/workflows/rust.yml)
 
-This command line interface implements the latest 
-[Rinex crate](https://crates.io/crates/rinex)
-and allows easy RINEX files manipulation.
-
 ## RINEX
 
 Why this tool ?
@@ -64,16 +60,19 @@ Many RINEX revisions exist
 * v = 4.0 and newer should work but is either
 not fully tested, not garanteed or restrictions may apply.
 
+Refer to the [RINEX framework documentation](https://crates.io/crates/rinex),
+for detailed information.
+
 ## Getting started
 
-You can run the application with `cargo` for instance
+This application is managed by `cargo`, therefore `cargo run` is one way to run it
 
 ```bash
 cargo run -- --help
 ```
 
 Command line arguments order does not matter.  
-(Input) `filepath` is the only mandatory argument, all other are optionnal.
+(Input) `filepath` is the only mandatory argument, other flags are optionnal.
 `Help` menu tells you which argument has a shortenned version,
 here is an example on how to use a shortenned argument:
 

@@ -7,10 +7,6 @@ Command line tool to handle, manage and analyze RINEX files
 [![crates.io](https://img.shields.io/crates/d/rinex-cli.svg)](https://crates.io/crates/rinex-cli)    
 [![Rust](https://github.com/gwbres/rinex-cli/actions/workflows/rust.yml/badge.svg)](https://github.com/gwbres/rinex-cli/actions/workflows/rust.yml)
 
-This command line interface implements the latest 
-[Rinex crate](https://crates.io/crates/rinex)
-and allows easy RINEX files manipulation.
-
 ## RINEX
 
 Why this tool ?
@@ -26,9 +22,7 @@ RINEX files are complex, several kinds exist and they differ a lot from one anot
 This tool is powerful enough to manage almost all revisions and most common RINEX files,
 without compromising ease of use.
 
-## Notes on data & RINEX
-
-Read this section before getting started
+## Notes on RINEX data
 
 ### Supported RINEX
 
@@ -46,11 +40,15 @@ File names are disregarded by these tools, you can analyze
 
 RINEX files are most of the time compressed.
 
-This tool support CRINEX (compressed RINEX) natively. You can
+This tool supports CRINEX (compressed RINEX) natively. You can
 pass a CRINEX and parse it directly.
 
 This tool does not support extra compression (like .gz for instance).
 It is up to the user to decompress these files prior analysis.
+
+This tool is focused on data extraction & analysis, if you want to perform
+file operations like `RNX2CRX` (compression) and `CRX2RNX` (decompression),
+prefer [this tool](https://github.com/gwbres/hatanaka) instead.
 
 ### RINEX Revisions
 
@@ -60,16 +58,19 @@ Many RINEX revisions exist
 * v = 4.0 and newer should work but is either
 not fully tested, not garanteed or restrictions may apply.
 
+Refer to the [RINEX framework documentation](https://crates.io/crates/rinex),
+for detailed information.
+
 ## Getting started
 
-You can run the application with `cargo` for instance
+This application is managed by `cargo`, therefore `cargo run` is one way to run it
 
 ```bash
 cargo run -- --help
 ```
 
 Command line arguments order does not matter.  
-(Input) `filepath` is the only mandatory argument, all other are optionnal.
+(Input) `filepath` is the only mandatory argument, other flags are optionnal.
 `Help` menu tells you which argument has a shortenned version,
 here is an example on how to use a shortenned argument:
 

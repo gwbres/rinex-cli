@@ -63,10 +63,18 @@ args:
         long: lli
         takes_value: true 
         help: Retain only OBS data that have these LLI flags asserted 
+    - has-lli:
+        long: has-lli
+        takes_value: false
+        help: Retain only OBS data that have an LLI flag attached to them
     - ssi:
         long: ssi
         takes_value: true 
         help: Retain only OBS data that have at least this SSI signal strength indication attached to them (x >= SSI is retained) 
+    - has-ssi:
+        long: has-ssi
+        takes_value: false
+        help: Retain only OBS data that have an SSI flag attached to them
     - distance:
         long: distance 
         takes_value: true

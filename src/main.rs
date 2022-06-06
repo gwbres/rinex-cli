@@ -110,10 +110,12 @@ pub fn main () {
         Some(s) => Some(s.split(",").collect()),
         _ => None,
     };
+    let has_lli = matches.is_present("has-lli");
     let lli : Option<u8> = match matches.value_of("lli") {
         Some(s) => Some(u8::from_str_radix(s,10).unwrap()),
         _ => None,
     };
+    let has_ssi = matches.is_present("has-ssi");
     let ssi : Option<observation::Ssi> = match matches.value_of("ssi") {
         Some(s) => Some(observation::Ssi::from_str(s).unwrap()),
         _ => None,
@@ -374,6 +376,33 @@ for fp in &filepaths {
             },
         }
     }
+    //[4*] LLI presence filter
+    if has_lli {
+        match &rinex.header.rinex_type {
+            Type::ObservationData => {
+                let mut rework = observation::Record::new();
+                for (epoch, (ck,data)) in rinex.record.as_obs().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, observation::ObservationData>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        let mut inner : HashMap<String, observation::ObservationData> = HashMap::new();
+                        for (code, data) in data.iter() {
+                            if let Some(lli_flags) = data.lli {
+                                inner.insert(code.clone(), data.clone());
+                            }
+                        }
+                        if inner.len() > 0 {
+                            map.insert(*sv, inner);
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, (*ck, map));
+                    }
+                }
+                rinex.record = Record::ObsRecord(rework)
+            },
+            _ => {},
+        }
+    }
     //[4*] LLI filter
     if let Some(lli) = lli {
         match &rinex.header.rinex_type {
@@ -388,6 +417,33 @@ for fp in &filepaths {
                                 if lli_flags == lli { 
                                     inner.insert(code.clone(), data.clone());
                                 }
+                            }
+                        }
+                        if inner.len() > 0 {
+                            map.insert(*sv, inner);
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, (*ck, map));
+                    }
+                }
+                rinex.record = Record::ObsRecord(rework)
+            },
+            _ => {},
+        }
+    }
+    //[4*] SSI presence filter
+    if has_ssi {
+        match &rinex.header.rinex_type {
+            Type::ObservationData => {
+                let mut rework = observation::Record::new();
+                for (epoch, (ck,data)) in rinex.record.as_obs().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, observation::ObservationData>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        let mut inner : HashMap<String, observation::ObservationData> = HashMap::new();
+                        for (code, data) in data.iter() {
+                            if let Some(ssi_flags) = data.ssi {
+                                inner.insert(code.clone(), data.clone());
                             }
                         }
                         if inner.len() > 0 {

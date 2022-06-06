@@ -46,6 +46,10 @@ args:
         long: obscodes
         takes_value: false
         help: Display (print) encountered OBS codes on a Satellite Vehicule basis
+    - constellation:
+        long: constellation
+        takes_value: true
+        help: Comma separated list of Constellation to retain.
     - sv:
         long: sv
         takes_value: true

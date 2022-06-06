@@ -73,6 +73,19 @@ pub fn main () {
     let epoch_display = matches.is_present("epoch");
     let epoch_ok_filter = matches.is_present("epoch-ok");
     let epoch_nok_filter = matches.is_present("epoch-nok");
+
+    // `GNSS`
+    let gnss_filter : Option<Vec<Constellation>> = match matches.value_of("constellation") {
+        Some(gnss) => {
+            let data : Vec<&str> = gnss.split(",").collect();
+            let mut gnss : Vec<Constellation> = Vec::new();
+            for d in data {
+                gnss.push(Constellation::from_str(d).unwrap())
+            }
+            Some(gnss)
+        },
+        _ => None,
+    };
     
     // `Sv`
     let sv_filter : Option<Vec<Sv>> = match matches.value_of("sv") {
@@ -226,7 +239,43 @@ for fp in &filepaths {
         }
     }
 
-    // [3] sv filter
+    // [3] GNSS filter
+    if let Some(ref filter) = gnss_filter {
+        match &rinex.header.rinex_type {
+            Type::ObservationData => {
+                let mut rework = observation::Record::new();
+                for (epoch, (ck,data)) in rinex.record.as_obs().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, observation::ObservationData>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        if filter.contains(&sv.constellation) {
+                            map.insert(*sv, data.clone());
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, (*ck, map));
+                    }
+                }
+                rinex.record = Record::ObsRecord(rework)
+            },
+            Type::NavigationData => {
+                let mut rework = navigation::Record::new();
+                for (epoch, data) in rinex.record.as_nav().unwrap().iter() {
+                    let mut map : HashMap<Sv, HashMap<String, navigation::ComplexEnum>> = HashMap::new();
+                    for (sv, data) in data.iter() {
+                        if filter.contains(&sv.constellation) {
+                            map.insert(*sv, data.clone());
+                        }
+                    }
+                    if map.len() > 0 {
+                        rework.insert(*epoch, map);
+                    }
+                }
+                rinex.record = Record::NavRecord(rework)
+            },
+            _ => {},
+        }
+    }
+    // [3*] sv filter
     if let Some(ref filter) = sv_filter {
         match &rinex.header.rinex_type {
             Type::ObservationData => {

@@ -79,11 +79,15 @@ cargo run --filepath /tmp/amel010.21g
 cargo run -f /tmp/amel010.21g
 ```
 
-Some arguments, like `filepath` or `obscodes` can take an array of values.
-In this case, we use comma separated enumeration like this:
+Using wrong arguments like a `GNSS` or `Sv` filter on Meteo Data for instance,
+will not cause a panic.
+
+Arguments that support an array of value are described using comma separation :
 
 ```bash
-cargo run -f /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
+cargo run -f /tmp/amel010.21g # analyze only 1 file
+cargo run -f \ # analyze both files
+    /tmp/amel010.21g,/mnt/CBW100NLD_R_20210010000_01D_MN.rnx
 ```
 
 ## Output format
@@ -158,6 +162,18 @@ cargo run -- -f /tmp/data.obs --epoch-ok -c C1C,C2C # reduce set
 cargo run -- -f /tmp/data.obs --epoch-nok -c C1C,C2C # focus on weird events 
 ```
 
+## Constellation filter
+
+User can filter some GNNS constellations out, with `--constellation`, 
+only the described systems will be kept:
+
+```shell
+cargo run -- -f /tmp/data.obs --epoch-ok \
+    --constellation GPS
+cargo run -- -f /tmp/data.obs --epoch-ok \
+    --constellation GPS,GAL
+```
+
 ## Satellite vehicule filter
 
 `--sv` is one way to focus on specific Satellite Vehicule or constellation of interest.
@@ -172,11 +188,6 @@ cargo run -- --filepath /tmp/data.obs --epoch-ok \
 
 Will only retain (all) data that has a EpochFlag::Ok 
 from GPS 1+2, GAL 6+24 and GLO 24 vehicules.
-
-## Constellation filter
-
-Constellation filter is not feasible at the moment.
-User can only use `sv` filter to do that at the moment.
 
 ## LLI : RX condition filter
 

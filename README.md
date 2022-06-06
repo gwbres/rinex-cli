@@ -176,40 +176,16 @@ cargo run -- -f /tmp/data.obs --epoch-ok \
 
 ## Satellite vehicule filter
 
-`--sv` is one way to focus on specific Satellite Vehicule or constellation of interest.
-Use comma separated description!
+User can focus on specific satellite vehicules, only
+specific vehicules will be kept:
 
 Example:
 
 ```shell
-cargo run -- --filepath /tmp/data.obs --epoch-ok \
-    --sv G01,G2,E06,E24,R24
-```
-
-Will only retain (all) data that has a EpochFlag::Ok 
-from GPS 1+2, GAL 6+24 and GLO 24 vehicules.
-
-## LLI : RX condition filter
-
-Observation data might have LLI flags attached to them.  
-It is possible to filter data that have a matching LLI flag,
-for instance 0x01 means Loss of Lock at given epoch:
-
-```shell
-cargo run -- -f /tmp/data.obs --lli 1 --sv R01 > output.txt
-```
-
-## SSI: signal "quality" filter
-
-Observation data might have an SSI indication attached to them.
-It is possible to filter data according to this value and
-retain only data with a certain "quality" attached to them.
-
-For example, with this value, we only retain data with SSI >= 5
-that means at least 30 dB SNR 
-
-```shell
-cargo run -- -f /tmp/data.obs --ssi 1 --sv R01 > output.txt
+cargo run -- -f /tmp/data.obs --epoch-ok \
+    --sv R01,R2,E06,E24,R24
+cargo run -- -f /tmp/data.obs --constellation GLO,GAL --epoch-ok \
+    --sv R01,R2,E06,E24,R24
 ```
 
 ## Data filter
@@ -240,6 +216,31 @@ cargo run -f CBW100NLD_R_20210010000_01D_MN.rnx \
         --ssi 5 # not bad \
             -c C1C,C2C,C1X # PR measurements only :) \
                 --sv G01,G2,G24,G25 # GPS focus !
+```
+
+## Observation Data specific filters
+
+Observation Data may comprise an LLI flag that describes
+RX conditions, and an SSI flag that depicts the RX SNR.
+
+Some flags are available to interact and filter using these informations:
+
+* `--has-lli` : will only retain OBS that have an LLI flag attached to them
+* `--lli %d` : will only retain OBS a matching LLI flag 
+* `--has-ssii` : will only retain OBS that have an SSI flag attached to them
+* `--ssii %d` : will only retain OBS have an SSI flag >= %d 
+
+for instance 0x01 means Loss of Lock at given epoch:
+Exemples :
+
+```shell
+# Retain Obs + LLI
+cargo run -- -f /tmp/data.obs --constellation GPS \
+    --has-lli > output.txt
+# Retain `Loss of Lock` events 
+cargo run -- -f /tmp/data.obs --lli 1 > output.txt
+# Retain >= 5 <=> at least 30 dB SNR
+cargo run -- -f /tmp/data.obs --ssi 5 > output.txt
 ```
 
 ## `teqc` operations
